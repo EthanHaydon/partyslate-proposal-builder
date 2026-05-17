@@ -1,0 +1,22 @@
+{
+  "name": "partyslate-proposal-builder",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vercel dev",
+    "deploy": "vercel deploy"
+  },
+  "engines": {
+    "node": "20.x"
+  },
+  "dependencies": {
+    "@sparticuz/chromium": "^131.0.0",
+    "csv-parse": "^5.5.6",
+    "pdf-lib": "^1.17.1",
+    "puppeteer-core": "^23.11.1"
+  },
+  "devDependencies": {
+    "vercel": "^53.1.1"
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "functions": {
+    "api/build-proposal.js": {
+      "memory": 1769,
+      "maxDuration": 120,
+      "includeFiles": "node_modules/@sparticuz/chromium/**"
+    }
+  }
+}

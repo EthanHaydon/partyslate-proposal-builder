@@ -1,0 +1,397 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Proposal Builder · PartySlate</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #FFFFFF;
+    --bg-muted: #F8F8F8;
+    --fg: #000000;
+    --fg-body: #2b2b2b;
+    --fg-muted: #6b6b6b;
+    --border: #D6D6D6;
+    --border-strong: #000000;
+    --gold: #B69853;
+    --raspberry: #B3446C;
+    --danger: #B3446C;
+    --sans: 'Montserrat', system-ui, sans-serif;
+    --serif: Georgia, 'Times New Roman', serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: var(--bg); color: var(--fg-body); }
+  body {
+    font-family: var(--sans);
+    font-weight: 300;
+    font-size: 15px;
+    line-height: 1.5;
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+  }
+  header {
+    border-bottom: 1px solid var(--border);
+    padding: 18px 28px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .wordmark {
+    font-size: 18px;
+    letter-spacing: 0.02em;
+  }
+  .wordmark .party { font-weight: 700; }
+  .wordmark .slate { font-family: var(--serif); font-style: italic; font-weight: 400; }
+  .product-name {
+    font-family: var(--serif);
+    font-style: italic;
+    font-size: 14px;
+    color: var(--fg-muted);
+  }
+
+  main {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 48px 28px 80px;
+  }
+
+  h1 {
+    font-family: var(--sans);
+    font-weight: 300;
+    font-size: 36px;
+    letter-spacing: -0.01em;
+    line-height: 1.1;
+    color: var(--fg);
+    margin-bottom: 8px;
+  }
+  .subtitle {
+    font-size: 14px;
+    color: var(--fg-muted);
+    margin-bottom: 36px;
+  }
+
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 22px;
+  }
+  .field label {
+    font-size: 11px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--fg);
+  }
+  .field .hint {
+    font-size: 12px;
+    color: var(--fg-muted);
+  }
+  .field input[type="text"],
+  .field input[type="number"] {
+    font-family: var(--sans);
+    font-size: 16px;
+    font-weight: 300;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    padding: 12px 14px;
+    color: var(--fg);
+    outline: none;
+    width: 100%;
+    transition: border-color 0.12s ease;
+  }
+  .field input:focus {
+    border-color: var(--gold);
+    box-shadow: inset 0 -1px 0 var(--gold);
+  }
+
+  .prices {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 14px;
+  }
+  .price-field { position: relative; }
+  .price-field input { padding-left: 26px; }
+  .price-field::after {
+    content: '$';
+    position: absolute;
+    left: 12px;
+    top: 38px;
+    color: var(--fg-muted);
+    font-size: 15px;
+    pointer-events: none;
+  }
+
+  .dropzone {
+    border: 1px dashed var(--border-strong);
+    background: var(--bg-muted);
+    padding: 28px 18px;
+    text-align: center;
+    cursor: pointer;
+    transition: background 0.1s ease;
+  }
+  .dropzone:hover, .dropzone.drag {
+    background: #f0f0f0;
+    border-color: var(--gold);
+  }
+  .dropzone .dz-primary {
+    font-weight: 500;
+    font-size: 14px;
+    letter-spacing: 0.04em;
+    color: var(--fg);
+    text-transform: uppercase;
+  }
+  .dropzone .dz-secondary {
+    font-size: 12px;
+    color: var(--fg-muted);
+    margin-top: 4px;
+  }
+  .dropzone .dz-filename {
+    font-size: 13px;
+    color: var(--fg);
+    margin-top: 10px;
+    font-weight: 500;
+    word-break: break-all;
+  }
+  input[type="file"] { display: none; }
+
+  details.help {
+    margin: 12px 0 0;
+    font-size: 12px;
+    color: var(--fg-muted);
+  }
+  details.help summary {
+    cursor: pointer;
+    user-select: none;
+    color: var(--fg);
+  }
+  details.help summary:hover { color: var(--gold); }
+  details.help ol {
+    margin-top: 10px;
+    padding-left: 22px;
+    line-height: 1.7;
+  }
+  details.help a {
+    color: var(--raspberry);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+  details.help a:hover { color: var(--gold); }
+
+  .actions {
+    margin-top: 12px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .btn {
+    font-family: var(--sans);
+    font-weight: 500;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    background: var(--fg);
+    color: var(--bg);
+    border: 1px solid var(--fg);
+    padding: 14px 28px;
+    cursor: pointer;
+    transition: background 0.1s ease, color 0.1s ease;
+  }
+  .btn:hover:not(:disabled) {
+    background: var(--gold);
+    border-color: var(--gold);
+  }
+  .btn:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+  }
+  .status {
+    font-size: 13px;
+    color: var(--fg-muted);
+  }
+  .status.err { color: var(--danger); }
+  .status.ok { color: var(--gold); }
+
+  footer {
+    text-align: center;
+    color: var(--fg-muted);
+    font-size: 12px;
+    padding: 24px;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wordmark"><span class="party">PARTY</span><span class="slate">SLATE</span></div>
+  <div class="product-name">Proposal Builder</div>
+</header>
+
+<main>
+  <h1>Build a proposal</h1>
+  <p class="subtitle">Provide the company name, an inquiry CSV, and pricing. Output is a branded PDF ready to send.</p>
+
+  <form id="form" autocomplete="off">
+
+    <div class="field">
+      <label for="companyName">Company Name</label>
+      <input type="text" id="companyName" name="companyName" placeholder="e.g. Four Seasons" required>
+    </div>
+
+    <div class="field">
+      <label>Inquiry CSV</label>
+      <div class="dropzone" id="dz" tabindex="0" role="button" aria-label="Drop CSV here or click to choose">
+        <div class="dz-primary">Drop CSV here</div>
+        <div class="dz-secondary">or click to choose · used for the dashboard + benchmarking slides</div>
+        <div class="dz-filename" id="filename"></div>
+      </div>
+      <input type="file" id="file" accept=".csv,text/csv">
+      <details class="help">
+        <summary>How to get the CSV</summary>
+        <ol>
+          <li><a href="https://52d6fdd7.us2a.app.preset.io/superset/dashboard/40/" target="_blank" rel="noopener noreferrer">Open the Preset dashboard ↗</a></li>
+          <li>Add company names</li>
+          <li>Add timelines</li>
+          <li>Export CSV file</li>
+          <li>Drop CSV above</li>
+        </ol>
+      </details>
+    </div>
+
+    <div class="prices">
+      <div class="field price-field">
+        <label for="listPrice">List Price</label>
+        <input type="number" id="listPrice" name="listPrice" min="0" step="1" placeholder="0" required>
+      </div>
+      <div class="field price-field">
+        <label for="discountedPrice">Discounted</label>
+        <input type="number" id="discountedPrice" name="discountedPrice" min="0" step="1" placeholder="0" required>
+      </div>
+      <div class="field price-field">
+        <label for="finalPrice">Final (Upfront)</label>
+        <input type="number" id="finalPrice" name="finalPrice" min="0" step="1" placeholder="0" required>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button class="btn" id="buildBtn" type="submit" disabled>Build Proposal PDF</button>
+      <span class="status" id="status"></span>
+    </div>
+  </form>
+</main>
+
+<footer>PartySlate · Proposal Builder</footer>
+
+<script>
+const $ = id => document.getElementById(id)
+const form = $('form')
+const dz = $('dz')
+const fileInput = $('file')
+const filenameEl = $('filename')
+const companyInput = $('companyName')
+const listInput = $('listPrice')
+const discInput = $('discountedPrice')
+const finalInput = $('finalPrice')
+const buildBtn = $('buildBtn')
+const statusEl = $('status')
+
+let csvText = null
+
+function setStatus(text, kind = '') {
+  statusEl.className = 'status' + (kind ? ' ' + kind : '')
+  statusEl.textContent = text
+}
+
+function refreshButton() {
+  const ok = csvText &&
+    companyInput.value.trim() &&
+    listInput.value !== '' &&
+    discInput.value !== '' &&
+    finalInput.value !== ''
+  buildBtn.disabled = !ok
+}
+
+;[companyInput, listInput, discInput, finalInput].forEach(el =>
+  el.addEventListener('input', refreshButton))
+
+dz.addEventListener('click', () => fileInput.click())
+dz.addEventListener('keydown', e => {
+  if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fileInput.click() }
+})
+;['dragenter', 'dragover'].forEach(ev =>
+  dz.addEventListener(ev, e => { e.preventDefault(); dz.classList.add('drag') }))
+;['dragleave', 'drop'].forEach(ev =>
+  dz.addEventListener(ev, e => { e.preventDefault(); dz.classList.remove('drag') }))
+dz.addEventListener('drop', e => {
+  const f = e.dataTransfer.files[0]
+  if (f) loadFile(f)
+})
+fileInput.addEventListener('change', e => {
+  const f = e.target.files[0]
+  if (f) loadFile(f)
+})
+
+async function loadFile(file) {
+  filenameEl.textContent = '› ' + file.name
+  setStatus('Reading CSV…')
+  try {
+    csvText = await file.text()
+    setStatus(`CSV loaded · ${file.name}`, 'ok')
+  } catch (e) {
+    csvText = null
+    setStatus('Failed to read file: ' + e.message, 'err')
+  }
+  refreshButton()
+}
+
+form.addEventListener('submit', async (e) => {
+  e.preventDefault()
+  if (!csvText) {
+    setStatus('Please add a CSV first.', 'err')
+    return
+  }
+  buildBtn.disabled = true
+  const originalText = buildBtn.textContent
+  buildBtn.textContent = 'Building…'
+  setStatus('Rendering slides and assembling PDF — this can take ~30s.')
+  const t0 = performance.now()
+  try {
+    const r = await fetch('/api/build-proposal', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        companyName: companyInput.value.trim(),
+        csv: csvText,
+        listPrice: Number(listInput.value),
+        discountedPrice: Number(discInput.value),
+        finalPrice: Number(finalInput.value),
+      }),
+    })
+    if (!r.ok) {
+      const err = await r.json().catch(() => ({}))
+      throw new Error(err.error || `build failed (${r.status})`)
+    }
+    const blob = await r.blob()
+    const cd = r.headers.get('Content-Disposition') || ''
+    const m = cd.match(/filename="(.+?)"/)
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = m ? m[1] : 'Proposal.pdf'
+    document.body.appendChild(a); a.click(); a.remove()
+    URL.revokeObjectURL(url)
+    const dt = ((performance.now() - t0) / 1000).toFixed(1)
+    setStatus(`Done · ${dt}s · file downloaded`, 'ok')
+  } catch (e) {
+    setStatus(e.message, 'err')
+  } finally {
+    buildBtn.textContent = originalText
+    refreshButton()
+  }
+})
+</script>
+</body>
+</html>

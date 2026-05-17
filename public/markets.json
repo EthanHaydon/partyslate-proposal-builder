@@ -1,0 +1,1202 @@
+{
+  "generated_at": "2026-05-06T17:57:57.089Z",
+  "source": "/Users/anthony/Downloads/Traffic Per Market 2025-04.xlsx",
+  "thresholds": {
+    "high_at_or_above": 50000,
+    "moderate_at_or_above": 10000
+  },
+  "markets": [
+    {
+      "metro": "New York City",
+      "traffic_actual": 316000,
+      "traffic_level": "HIGH",
+      "event_breakdown": {
+        "Corporate Events": 0.288,
+        "Weddings": 0.2793,
+        "Birthdays": 0.2012,
+        "Celebrations": 0.1129,
+        "Fundraisers": 0.0622,
+        "Mitzvahs": 0.0564
+      }
+    },
+    {
+      "metro": "Los Angeles",
+      "traffic_actual": 264000,
+      "traffic_level": "HIGH",
+      "event_breakdown": {
+        "Weddings": 0.3754,
+        "Birthdays": 0.2416,
+        "Corporate Events": 0.2234,
+        "Celebrations": 0.1033,
+        "Fundraisers": 0.0289,
+        "Mitzvahs": 0.0274
+      }
+    },
+    {
+      "metro": "Miami",
+      "traffic_actual": 231000,
+      "traffic_level": "HIGH",
+      "event_breakdown": {
+        "Weddings": 0.447,
+        "Birthdays": 0.2335,
+        "Corporate Events": 0.1459,
+        "Celebrations": 0.1106,
+        "Mitzvahs": 0.0323,
+        "Fundraisers": 0.0307
+      }
+    },
+    {
+      "metro": "Chicago",
+      "traffic_actual": 210000,
+      "traffic_level": "HIGH",
+      "event_breakdown": {
+        "Weddings": 0.4835,
+        "Birthdays": 0.2004,
+        "Corporate Events": 0.1509,
+        "Celebrations": 0.1013,
+        "Fundraisers": 0.0363,
+        "Mitzvahs": 0.0275
+      }
+    },
+    {
+      "metro": "Dallas",
+      "traffic_actual": 152000,
+      "traffic_level": "HIGH",
+      "event_breakdown": {
+        "Birthdays": 0.2869,
+        "Weddings": 0.2599,
+        "Celebrations": 0.1913,
+        "Corporate Events": 0.1767,
+        "Fundraisers": 0.0561,
+        "Mitzvahs": 0.0291
+      }
+    },
+    {
+      "metro": "Houston",
+      "traffic_actual": 118000,
+      "traffic_level": "HIGH",
+      "event_breakdown": {
+        "Weddings": 0.4356,
+        "Birthdays": 0.2425,
+        "Celebrations": 0.1459,
+        "Corporate Events": 0.1266,
+        "Fundraisers": 0.0365,
+        "Mitzvahs": 0.0129
+      }
+    },
+    {
+      "metro": "San Francisco",
+      "traffic_actual": 116000,
+      "traffic_level": "HIGH",
+      "event_breakdown": {
+        "Weddings": 0.3038,
+        "Birthdays": 0.2405,
+        "Corporate Events": 0.211,
+        "Celebrations": 0.173,
+        "Mitzvahs": 0.0506,
+        "Fundraisers": 0.0211
+      }
+    },
+    {
+      "metro": "Washington, D.C.",
+      "traffic_actual": 115000,
+      "traffic_level": "HIGH",
+      "event_breakdown": {
+        "Birthdays": 0.2933,
+        "Weddings": 0.22,
+        "Corporate Events": 0.2033,
+        "Celebrations": 0.17,
+        "Fundraisers": 0.0633,
+        "Mitzvahs": 0.05
+      }
+    },
+    {
+      "metro": "Boston",
+      "traffic_actual": 109000,
+      "traffic_level": "HIGH",
+      "event_breakdown": {
+        "Weddings": 0.2921,
+        "Birthdays": 0.2525,
+        "Corporate Events": 0.2376,
+        "Celebrations": 0.1188,
+        "Fundraisers": 0.0495,
+        "Mitzvahs": 0.0495
+      }
+    },
+    {
+      "metro": "Atlanta",
+      "traffic_actual": 100000,
+      "traffic_level": "HIGH",
+      "event_breakdown": {
+        "Birthdays": 0.3289,
+        "Weddings": 0.2824,
+        "Celebrations": 0.1661,
+        "Corporate Events": 0.1495,
+        "Fundraisers": 0.0598,
+        "Mitzvahs": 0.0133
+      }
+    },
+    {
+      "metro": "Denver",
+      "traffic_actual": 91000,
+      "traffic_level": "HIGH",
+      "event_breakdown": {
+        "Weddings": 0.4545,
+        "Corporate Events": 0.2159,
+        "Birthdays": 0.1364,
+        "Celebrations": 0.1023,
+        "Fundraisers": 0.0682,
+        "Mitzvahs": 0.0227
+      }
+    },
+    {
+      "metro": "Chicago Suburbs",
+      "traffic_actual": 65000,
+      "traffic_level": "HIGH",
+      "event_breakdown": {
+        "Birthdays": 0.3498,
+        "Weddings": 0.2956,
+        "Celebrations": 0.1429,
+        "Mitzvahs": 0.0985,
+        "Corporate Events": 0.069,
+        "Fundraisers": 0.0443
+      }
+    },
+    {
+      "metro": "Phoenix",
+      "traffic_actual": 55000,
+      "traffic_level": "HIGH",
+      "event_breakdown": {
+        "Weddings": 0.3171,
+        "Corporate Events": 0.2764,
+        "Birthdays": 0.2033,
+        "Celebrations": 0.1057,
+        "Fundraisers": 0.0488,
+        "Mitzvahs": 0.0488
+      }
+    },
+    {
+      "metro": "Orlando",
+      "traffic_actual": 54000,
+      "traffic_level": "HIGH",
+      "event_breakdown": {
+        "Birthdays": 0.3644,
+        "Weddings": 0.2881,
+        "Corporate Events": 0.1695,
+        "Celebrations": 0.1186,
+        "Fundraisers": 0.0339,
+        "Mitzvahs": 0.0254
+      }
+    },
+    {
+      "metro": "Seattle",
+      "traffic_actual": 54000,
+      "traffic_level": "HIGH",
+      "event_breakdown": {
+        "Weddings": 0.4299,
+        "Celebrations": 0.2617,
+        "Birthdays": 0.1963,
+        "Corporate Events": 0.1028,
+        "Fundraisers": 0.0093
+      }
+    },
+    {
+      "metro": "San Diego",
+      "traffic_actual": 51000,
+      "traffic_level": "HIGH",
+      "event_breakdown": {
+        "Weddings": 0.3279,
+        "Birthdays": 0.2541,
+        "Corporate Events": 0.1885,
+        "Celebrations": 0.1557,
+        "Fundraisers": 0.0574,
+        "Mitzvahs": 0.0164
+      }
+    },
+    {
+      "metro": "Orange County",
+      "traffic_actual": 44000,
+      "traffic_level": "MODERATE",
+      "event_breakdown": {
+        "Weddings": 0.4239,
+        "Birthdays": 0.2391,
+        "Celebrations": 0.1522,
+        "Corporate Events": 0.1196,
+        "Fundraisers": 0.0326,
+        "Mitzvahs": 0.0326
+      }
+    },
+    {
+      "metro": "Philadelphia",
+      "traffic_actual": 41000,
+      "traffic_level": "MODERATE",
+      "event_breakdown": {
+        "Weddings": 0.3529,
+        "Corporate Events": 0.2745,
+        "Birthdays": 0.1569,
+        "Fundraisers": 0.098,
+        "Celebrations": 0.098,
+        "Mitzvahs": 0.0196
+      }
+    },
+    {
+      "metro": "Hudson Valley",
+      "traffic_actual": 40000,
+      "traffic_level": "MODERATE",
+      "event_breakdown": {
+        "Weddings": 0.3898,
+        "Birthdays": 0.2373,
+        "Celebrations": 0.1356,
+        "Mitzvahs": 0.1356,
+        "Corporate Events": 0.0678,
+        "Fundraisers": 0.0339
+      }
+    },
+    {
+      "metro": "Charleston, SC",
+      "traffic_actual": 37000,
+      "traffic_level": "MODERATE",
+      "event_breakdown": {
+        "Weddings": 0.5775,
+        "Celebrations": 0.169,
+        "Birthdays": 0.1268,
+        "Corporate Events": 0.0986,
+        "Fundraisers": 0.0282
+      }
+    },
+    {
+      "metro": "Tampa",
+      "traffic_actual": 37000,
+      "traffic_level": "MODERATE",
+      "event_breakdown": {
+        "Birthdays": 0.451,
+        "Weddings": 0.2353,
+        "Corporate Events": 0.1373,
+        "Celebrations": 0.1373,
+        "Fundraisers": 0.0392
+      }
+    },
+    {
+      "metro": "New Orleans",
+      "traffic_actual": 36000,
+      "traffic_level": "MODERATE",
+      "event_breakdown": {
+        "Weddings": 0.4015,
+        "Birthdays": 0.3577,
+        "Celebrations": 0.1533,
+        "Corporate Events": 0.073,
+        "Fundraisers": 0.0146
+      }
+    },
+    {
+      "metro": "North Jersey",
+      "traffic_actual": 35000,
+      "traffic_level": "MODERATE",
+      "event_breakdown": {
+        "Birthdays": 0.463,
+        "Weddings": 0.2407,
+        "Celebrations": 0.1481,
+        "Corporate Events": 0.0556,
+        "Mitzvahs": 0.0556,
+        "Fundraisers": 0.037
+      }
+    },
+    {
+      "metro": "Napa Valley",
+      "traffic_actual": 33000,
+      "traffic_level": "MODERATE",
+      "event_breakdown": {
+        "Weddings": 0.7067,
+        "Birthdays": 0.12,
+        "Celebrations": 0.1067,
+        "Fundraisers": 0.04,
+        "Corporate Events": 0.0267
+      }
+    },
+    {
+      "metro": "Austin",
+      "traffic_actual": 32000,
+      "traffic_level": "MODERATE",
+      "event_breakdown": {
+        "Corporate Events": 0.2388,
+        "Weddings": 0.2388,
+        "Celebrations": 0.2388,
+        "Birthdays": 0.1493,
+        "Fundraisers": 0.0896,
+        "Mitzvahs": 0.0448
+      }
+    },
+    {
+      "metro": "Las Vegas",
+      "traffic_actual": 32000,
+      "traffic_level": "MODERATE",
+      "event_breakdown": {
+        "Corporate Events": 0.35,
+        "Weddings": 0.28,
+        "Birthdays": 0.25,
+        "Celebrations": 0.09,
+        "Mitzvahs": 0.02,
+        "Fundraisers": 0.01
+      }
+    },
+    {
+      "metro": "Nashville",
+      "traffic_actual": 31000,
+      "traffic_level": "MODERATE",
+      "event_breakdown": {
+        "Weddings": 0.4756,
+        "Birthdays": 0.2439,
+        "Corporate Events": 0.1585,
+        "Celebrations": 0.0854,
+        "Fundraisers": 0.0366
+      }
+    },
+    {
+      "metro": "Baltimore",
+      "traffic_actual": 28000,
+      "traffic_level": "MODERATE",
+      "event_breakdown": {
+        "Weddings": 0.3684,
+        "Birthdays": 0.2105,
+        "Celebrations": 0.1842,
+        "Corporate Events": 0.1053,
+        "Mitzvahs": 0.0789,
+        "Fundraisers": 0.0526
+      }
+    },
+    {
+      "metro": "Charlotte",
+      "traffic_actual": 24000,
+      "traffic_level": "MODERATE",
+      "event_breakdown": {
+        "Birthdays": 0.413,
+        "Celebrations": 0.1957,
+        "Weddings": 0.1522,
+        "Fundraisers": 0.1087,
+        "Corporate Events": 0.087,
+        "Mitzvahs": 0.0435
+      }
+    },
+    {
+      "metro": "Mexico",
+      "traffic_actual": 23000,
+      "traffic_level": "MODERATE",
+      "event_breakdown": {
+        "Weddings": 0.8636,
+        "Birthdays": 0.0909,
+        "Celebrations": 0.0273,
+        "Corporate Events": 0.0182
+      }
+    },
+    {
+      "metro": "Long Island",
+      "traffic_actual": 22000,
+      "traffic_level": "MODERATE",
+      "event_breakdown": {
+        "Birthdays": 0.3333,
+        "Celebrations": 0.2424,
+        "Weddings": 0.2121,
+        "Corporate Events": 0.0909,
+        "Mitzvahs": 0.0909,
+        "Fundraisers": 0.0303
+      }
+    },
+    {
+      "metro": "Minneapolis",
+      "traffic_actual": 22000,
+      "traffic_level": "MODERATE",
+      "event_breakdown": {
+        "Weddings": 0.325,
+        "Celebrations": 0.3,
+        "Birthdays": 0.25,
+        "Corporate Events": 0.1,
+        "Fundraisers": 0.025
+      }
+    },
+    {
+      "metro": "Detroit",
+      "traffic_actual": 21000,
+      "traffic_level": "MODERATE",
+      "event_breakdown": {
+        "Celebrations": 0.3889,
+        "Birthdays": 0.3056,
+        "Weddings": 0.1944,
+        "Corporate Events": 0.1111
+      }
+    },
+    {
+      "metro": "Inland Empire",
+      "traffic_actual": 18000,
+      "traffic_level": "MODERATE",
+      "event_breakdown": {
+        "Weddings": 0.4063,
+        "Birthdays": 0.2813,
+        "Celebrations": 0.2188,
+        "Corporate Events": 0.0938
+      }
+    },
+    {
+      "metro": "Raleigh",
+      "traffic_actual": 18000,
+      "traffic_level": "MODERATE",
+      "event_breakdown": {
+        "Celebrations": 0.3462,
+        "Weddings": 0.2692,
+        "Corporate Events": 0.2308,
+        "Birthdays": 0.1538
+      }
+    },
+    {
+      "metro": "Sacramento",
+      "traffic_actual": 18000,
+      "traffic_level": "MODERATE",
+      "event_breakdown": {
+        "Weddings": 0.5217,
+        "Birthdays": 0.3478,
+        "Celebrations": 0.087,
+        "Corporate Events": 0.0435
+      }
+    },
+    {
+      "metro": "Central Jersey",
+      "traffic_actual": 17000,
+      "traffic_level": "MODERATE",
+      "event_breakdown": {
+        "Birthdays": 0.5,
+        "Celebrations": 0.25,
+        "Mitzvahs": 0.125,
+        "Weddings": 0.0625,
+        "Corporate Events": 0.0625
+      }
+    },
+    {
+      "metro": "Santa Barbara",
+      "traffic_actual": 16000,
+      "traffic_level": "MODERATE",
+      "event_breakdown": {
+        "Weddings": 0.7931,
+        "Birthdays": 0.1379,
+        "Mitzvahs": 0.069
+      }
+    },
+    {
+      "metro": "Cleveland",
+      "traffic_actual": 15000,
+      "traffic_level": "MODERATE",
+      "event_breakdown": {
+        "Birthdays": 0.4,
+        "Weddings": 0.3,
+        "Celebrations": 0.25,
+        "Corporate Events": 0.05
+      }
+    },
+    {
+      "metro": "San Antonio",
+      "traffic_actual": 15000,
+      "traffic_level": "MODERATE",
+      "event_breakdown": {
+        "Corporate Events": 0.3143,
+        "Birthdays": 0.2286,
+        "Weddings": 0.2286,
+        "Celebrations": 0.2,
+        "Mitzvahs": 0.0286
+      }
+    },
+    {
+      "metro": "Cape Cod",
+      "traffic_actual": 13000,
+      "traffic_level": "MODERATE",
+      "event_breakdown": {
+        "Weddings": 0.5,
+        "Birthdays": 0.25,
+        "Celebrations": 0.25
+      }
+    },
+    {
+      "metro": "Hartford",
+      "traffic_actual": 13000,
+      "traffic_level": "MODERATE",
+      "event_breakdown": {
+        "Corporate Events": 0.3571,
+        "Weddings": 0.2857,
+        "Celebrations": 0.1429,
+        "Birthdays": 0.1429,
+        "Mitzvahs": 0.0714
+      }
+    },
+    {
+      "metro": "Richmond",
+      "traffic_actual": 13000,
+      "traffic_level": "MODERATE",
+      "event_breakdown": {
+        "Weddings": 0.375,
+        "Celebrations": 0.3125,
+        "Birthdays": 0.25,
+        "Fundraisers": 0.0625
+      }
+    },
+    {
+      "metro": "St. Louis",
+      "traffic_actual": 13000,
+      "traffic_level": "MODERATE",
+      "event_breakdown": {
+        "Weddings": 0.3333,
+        "Birthdays": 0.2963,
+        "Celebrations": 0.2222,
+        "Corporate Events": 0.0741,
+        "Mitzvahs": 0.037,
+        "Fundraisers": 0.037
+      }
+    },
+    {
+      "metro": "Hawaii",
+      "traffic_actual": 12000,
+      "traffic_level": "MODERATE",
+      "event_breakdown": {
+        "Weddings": 0.4138,
+        "Birthdays": 0.2069,
+        "Celebrations": 0.2069,
+        "Corporate Events": 0.1724
+      }
+    },
+    {
+      "metro": "Pittsburgh",
+      "traffic_actual": 12000,
+      "traffic_level": "MODERATE",
+      "event_breakdown": {
+        "Weddings": 0.55,
+        "Birthdays": 0.25,
+        "Fundraisers": 0.1,
+        "Corporate Events": 0.1
+      }
+    },
+    {
+      "metro": "Providence",
+      "traffic_actual": 12000,
+      "traffic_level": "MODERATE",
+      "event_breakdown": {
+        "Weddings": 0.6471,
+        "Birthdays": 0.1765,
+        "Celebrations": 0.1176,
+        "Fundraisers": 0.0588
+      }
+    },
+    {
+      "metro": "Cincinnati",
+      "traffic_actual": 11000,
+      "traffic_level": "MODERATE",
+      "event_breakdown": {
+        "Weddings": 0.4091,
+        "Birthdays": 0.2727,
+        "Celebrations": 0.2273,
+        "Corporate Events": 0.0909
+      }
+    },
+    {
+      "metro": "Portland, OR",
+      "traffic_actual": 11000,
+      "traffic_level": "MODERATE",
+      "event_breakdown": {
+        "Weddings": 0.4286,
+        "Birthdays": 0.1429,
+        "Celebrations": 0.1429,
+        "Corporate Events": 0.1429,
+        "Mitzvahs": 0.1429
+      }
+    },
+    {
+      "metro": "Salt Lake City",
+      "traffic_actual": 11000,
+      "traffic_level": "MODERATE",
+      "event_breakdown": {
+        "Corporate Events": 0.625,
+        "Celebrations": 0.125,
+        "Weddings": 0.125,
+        "Birthdays": 0.125
+      }
+    },
+    {
+      "metro": "Grand Rapids",
+      "traffic_actual": 10000,
+      "traffic_level": "MODERATE",
+      "event_breakdown": {
+        "Weddings": 0.6,
+        "Corporate Events": 0.2,
+        "Birthdays": 0.2
+      }
+    },
+    {
+      "metro": "Indianapolis",
+      "traffic_actual": 10000,
+      "traffic_level": "MODERATE",
+      "event_breakdown": {
+        "Weddings": 0.4,
+        "Corporate Events": 0.2,
+        "Birthdays": 0.2,
+        "Mitzvahs": 0.1,
+        "Celebrations": 0.1
+      }
+    },
+    {
+      "metro": "Jacksonville",
+      "traffic_actual": 10000,
+      "traffic_level": "MODERATE",
+      "event_breakdown": {
+        "Birthdays": 0.5556,
+        "Weddings": 0.3333,
+        "Celebrations": 0.0556,
+        "Corporate Events": 0.0556
+      }
+    },
+    {
+      "metro": "Jersey Shore",
+      "traffic_actual": 10000,
+      "traffic_level": "MODERATE",
+      "event_breakdown": {
+        "Weddings": 0.5,
+        "Birthdays": 0.2857,
+        "Celebrations": 0.2143
+      }
+    },
+    {
+      "metro": "Concord",
+      "traffic_actual": 9000,
+      "traffic_level": "LOW",
+      "event_breakdown": {
+        "Weddings": 1
+      }
+    },
+    {
+      "metro": "Milwaukee",
+      "traffic_actual": 9000,
+      "traffic_level": "LOW",
+      "event_breakdown": {
+        "Birthdays": 0.4667,
+        "Weddings": 0.4,
+        "Celebrations": 0.0667,
+        "Corporate Events": 0.0667
+      }
+    },
+    {
+      "metro": "Columbia",
+      "traffic_actual": 8000,
+      "traffic_level": "LOW",
+      "event_breakdown": {
+        "Birthdays": 0.75,
+        "Celebrations": 0.25
+      }
+    },
+    {
+      "metro": "Columbus, OH",
+      "traffic_actual": 8000,
+      "traffic_level": "LOW",
+      "event_breakdown": {
+        "Weddings": 0.375,
+        "Mitzvahs": 0.25,
+        "Celebrations": 0.125,
+        "Fundraisers": 0.125,
+        "Birthdays": 0.125
+      }
+    },
+    {
+      "metro": "Kansas City",
+      "traffic_actual": 8000,
+      "traffic_level": "LOW",
+      "event_breakdown": {
+        "Celebrations": 0.3846,
+        "Weddings": 0.3077,
+        "Birthdays": 0.2308,
+        "Corporate Events": 0.0769
+      }
+    },
+    {
+      "metro": "Naples",
+      "traffic_actual": 8000,
+      "traffic_level": "LOW",
+      "event_breakdown": {
+        "Weddings": 0.7333,
+        "Birthdays": 0.1333,
+        "Corporate Events": 0.0667,
+        "Celebrations": 0.0667
+      }
+    },
+    {
+      "metro": "Albany",
+      "traffic_actual": 7000,
+      "traffic_level": "LOW",
+      "event_breakdown": {
+        "Weddings": 0.625,
+        "Birthdays": 0.375
+      }
+    },
+    {
+      "metro": "Birmingham",
+      "traffic_actual": 7000,
+      "traffic_level": "LOW",
+      "event_breakdown": {
+        "Birthdays": 0.5455,
+        "Fundraisers": 0.1818,
+        "Celebrations": 0.1818,
+        "Weddings": 0.0909
+      }
+    },
+    {
+      "metro": "Louisville",
+      "traffic_actual": 7000,
+      "traffic_level": "LOW",
+      "event_breakdown": {
+        "Celebrations": 1
+      }
+    },
+    {
+      "metro": "Savannah",
+      "traffic_actual": 7000,
+      "traffic_level": "LOW",
+      "event_breakdown": {
+        "Weddings": 0.7778,
+        "Celebrations": 0.1111,
+        "Birthdays": 0.0556,
+        "Corporate Events": 0.0556
+      }
+    },
+    {
+      "metro": "Hampton Roads",
+      "traffic_actual": 6000,
+      "traffic_level": "LOW",
+      "event_breakdown": {
+        "Celebrations": 0.6,
+        "Birthdays": 0.2,
+        "Fundraisers": 0.2
+      }
+    },
+    {
+      "metro": "Hamptons",
+      "traffic_actual": 6000,
+      "traffic_level": "LOW",
+      "event_breakdown": {
+        "Weddings": 0.5455,
+        "Birthdays": 0.2273,
+        "Celebrations": 0.0909,
+        "Fundraisers": 0.0455,
+        "Mitzvahs": 0.0455,
+        "Corporate Events": 0.0455
+      }
+    },
+    {
+      "metro": "Portland, ME",
+      "traffic_actual": 6000,
+      "traffic_level": "LOW",
+      "event_breakdown": {
+        "Weddings": 0.6667,
+        "Birthdays": 0.3333
+      }
+    },
+    {
+      "metro": "Finger Lakes",
+      "traffic_actual": 5000,
+      "traffic_level": "LOW",
+      "event_breakdown": {
+        "Weddings": 0.5,
+        "Birthdays": 0.25,
+        "Celebrations": 0.25
+      }
+    },
+    {
+      "metro": "Hilton Head",
+      "traffic_actual": 5000,
+      "traffic_level": "LOW",
+      "event_breakdown": {
+        "Weddings": 0.8,
+        "Birthdays": 0.2
+      }
+    },
+    {
+      "metro": "Knoxville",
+      "traffic_actual": 5000,
+      "traffic_level": "LOW",
+      "event_breakdown": {
+        "Weddings": 0.4286,
+        "Corporate Events": 0.4286,
+        "Celebrations": 0.1429
+      }
+    },
+    {
+      "metro": "Lancaster",
+      "traffic_actual": 5000,
+      "traffic_level": "LOW",
+      "event_breakdown": {
+        "Weddings": 0.4286,
+        "Birthdays": 0.4286,
+        "Celebrations": 0.1429
+      }
+    },
+    {
+      "metro": "Memphis",
+      "traffic_actual": 5000,
+      "traffic_level": "LOW",
+      "event_breakdown": {
+        "Weddings": 0.4,
+        "Mitzvahs": 0.2,
+        "Birthdays": 0.2,
+        "Celebrations": 0.2
+      }
+    },
+    {
+      "metro": "Monterey",
+      "traffic_actual": 5000,
+      "traffic_level": "LOW",
+      "event_breakdown": {
+        "Weddings": 0.8333,
+        "Corporate Events": 0.0833,
+        "Celebrations": 0.0833
+      }
+    },
+    {
+      "metro": "Oklahoma City",
+      "traffic_actual": 5000,
+      "traffic_level": "LOW",
+      "event_breakdown": {
+        "Weddings": 0.5,
+        "Birthdays": 0.5
+      }
+    },
+    {
+      "metro": "South Jersey",
+      "traffic_actual": 5000,
+      "traffic_level": "LOW",
+      "event_breakdown": {
+        "Birthdays": 0.6667,
+        "Mitzvahs": 0.3333
+      }
+    },
+    {
+      "metro": "Tucson",
+      "traffic_actual": 5000,
+      "traffic_level": "LOW",
+      "event_breakdown": {
+        "Weddings": 0.75,
+        "Celebrations": 0.25
+      }
+    },
+    {
+      "metro": "Boise",
+      "traffic_actual": 4000,
+      "traffic_level": "LOW",
+      "event_breakdown": {
+        "Weddings": 0.5,
+        "Birthdays": 0.1667,
+        "Corporate Events": 0.1667,
+        "Celebrations": 0.1667
+      }
+    },
+    {
+      "metro": "Burlington",
+      "traffic_actual": 4000,
+      "traffic_level": "LOW",
+      "event_breakdown": {
+        "Birthdays": 1
+      }
+    },
+    {
+      "metro": "Fresno",
+      "traffic_actual": 4000,
+      "traffic_level": "LOW",
+      "event_breakdown": {
+        "Weddings": 0.5625,
+        "Birthdays": 0.25,
+        "Corporate Events": 0.1875
+      }
+    },
+    {
+      "metro": "Panhandle",
+      "traffic_actual": 4000,
+      "traffic_level": "LOW",
+      "event_breakdown": {
+        "Weddings": 0.8,
+        "Celebrations": 0.2
+      }
+    },
+    {
+      "metro": "Scranton",
+      "traffic_actual": 4000,
+      "traffic_level": "LOW",
+      "event_breakdown": {
+        "Celebrations": 1
+      }
+    },
+    {
+      "metro": "Syracuse",
+      "traffic_actual": 4000,
+      "traffic_level": "LOW",
+      "event_breakdown": {
+        "Weddings": 0.25,
+        "Celebrations": 0.25,
+        "Fundraisers": 0.25,
+        "Birthdays": 0.25
+      }
+    },
+    {
+      "metro": "Albuquerque",
+      "traffic_actual": 3000,
+      "traffic_level": "LOW",
+      "event_breakdown": {
+        "Birthdays": 0.6667,
+        "Weddings": 0.3333
+      }
+    },
+    {
+      "metro": "Cedar Rapids",
+      "traffic_actual": 3000,
+      "traffic_level": "LOW",
+      "event_breakdown": {
+        "Weddings": 0.625,
+        "Corporate Events": 0.25,
+        "Birthdays": 0.125
+      }
+    },
+    {
+      "metro": "Florida Keys",
+      "traffic_actual": 3000,
+      "traffic_level": "LOW",
+      "event_breakdown": {
+        "Weddings": 0.6,
+        "Birthdays": 0.2,
+        "Corporate Events": 0.2
+      }
+    },
+    {
+      "metro": "Green Bay",
+      "traffic_actual": 3000,
+      "traffic_level": "LOW",
+      "event_breakdown": {
+        "Weddings": 0.5,
+        "Corporate Events": 0.25,
+        "Birthdays": 0.25
+      }
+    },
+    {
+      "metro": "Jackson",
+      "traffic_actual": 3000,
+      "traffic_level": "LOW",
+      "event_breakdown": {
+        "Birthdays": 0.5,
+        "Weddings": 0.5
+      }
+    },
+    {
+      "metro": "Madison",
+      "traffic_actual": 3000,
+      "traffic_level": "LOW",
+      "event_breakdown": {
+        "Birthdays": 0.75,
+        "Celebrations": 0.25
+      }
+    },
+    {
+      "metro": "Reno",
+      "traffic_actual": 3000,
+      "traffic_level": "LOW",
+      "event_breakdown": {
+        "Weddings": 1
+      }
+    },
+    {
+      "metro": "Spokane",
+      "traffic_actual": 3000,
+      "traffic_level": "LOW",
+      "event_breakdown": {
+        "Birthdays": 0.6667,
+        "Weddings": 0.3333
+      }
+    },
+    {
+      "metro": "Springfield, IL",
+      "traffic_actual": 3000,
+      "traffic_level": "LOW",
+      "event_breakdown": {
+        "Birthdays": 0.4,
+        "Weddings": 0.4,
+        "Celebrations": 0.2
+      }
+    },
+    {
+      "metro": "Springfield, MA",
+      "traffic_actual": 3000,
+      "traffic_level": "LOW",
+      "event_breakdown": {
+        "Weddings": 0.5,
+        "Birthdays": 0.25,
+        "Celebrations": 0.25
+      }
+    },
+    {
+      "metro": "Tulsa",
+      "traffic_actual": 3000,
+      "traffic_level": "LOW",
+      "event_breakdown": {
+        "Corporate Events": 0.5,
+        "Weddings": 0.25,
+        "Birthdays": 0.25
+      }
+    },
+    {
+      "metro": "Wilmington, DE",
+      "traffic_actual": 3000,
+      "traffic_level": "LOW",
+      "event_breakdown": {
+        "Birthdays": 0.25,
+        "Mitzvahs": 0.25,
+        "Celebrations": 0.25,
+        "Weddings": 0.25
+      }
+    },
+    {
+      "metro": "Bozeman",
+      "traffic_actual": 2000,
+      "traffic_level": "LOW",
+      "event_breakdown": {
+        "Weddings": 1
+      }
+    },
+    {
+      "metro": "El Paso",
+      "traffic_actual": 2000,
+      "traffic_level": "LOW",
+      "event_breakdown": {
+        "Weddings": 1
+      }
+    },
+    {
+      "metro": "Eugene",
+      "traffic_actual": 2000,
+      "traffic_level": "LOW",
+      "event_breakdown": {
+        "Birthdays": 1
+      }
+    },
+    {
+      "metro": "Little Rock",
+      "traffic_actual": 2000,
+      "traffic_level": "LOW",
+      "event_breakdown": {
+        "Weddings": 0.6,
+        "Birthdays": 0.4
+      }
+    },
+    {
+      "metro": "South Bend",
+      "traffic_actual": 2000,
+      "traffic_level": "LOW",
+      "event_breakdown": {
+        "Weddings": 0.6667,
+        "Celebrations": 0.3333
+      }
+    },
+    {
+      "metro": "Toledo",
+      "traffic_actual": 2000,
+      "traffic_level": "LOW",
+      "event_breakdown": {
+        "Weddings": 0.75,
+        "Birthdays": 0.25
+      }
+    },
+    {
+      "metro": "Topeka",
+      "traffic_actual": 2000,
+      "traffic_level": "LOW",
+      "event_breakdown": {
+        "Corporate Events": 0.5,
+        "Birthdays": 0.5
+      }
+    },
+    {
+      "metro": "Wichita",
+      "traffic_actual": 2000,
+      "traffic_level": "LOW",
+      "event_breakdown": {
+        "Birthdays": 1
+      }
+    },
+    {
+      "metro": "Wilmington, NC",
+      "traffic_actual": 2000,
+      "traffic_level": "LOW",
+      "event_breakdown": {
+        "Weddings": 0.75,
+        "Celebrations": 0.25
+      }
+    },
+    {
+      "metro": "Anchorage",
+      "traffic_actual": 1000,
+      "traffic_level": "LOW",
+      "event_breakdown": {
+        "Celebrations": 1
+      }
+    },
+    {
+      "metro": "Charleston, WV",
+      "traffic_actual": 1000,
+      "traffic_level": "LOW",
+      "event_breakdown": {
+        "Weddings": 0.5,
+        "Corporate Events": 0.5
+      }
+    },
+    {
+      "metro": "Cheyenne",
+      "traffic_actual": 1000,
+      "traffic_level": "LOW",
+      "event_breakdown": {
+        "Weddings": 1
+      }
+    },
+    {
+      "metro": "Columbus, GA",
+      "traffic_actual": 1000,
+      "traffic_level": "LOW",
+      "event_breakdown": {
+        "Celebrations": 1
+      }
+    },
+    {
+      "metro": "Fargo",
+      "traffic_actual": 1000,
+      "traffic_level": "LOW",
+      "event_breakdown": {
+        "Corporate Events": 0.6667,
+        "Birthdays": 0.3333
+      }
+    },
+    {
+      "metro": "Montgomery",
+      "traffic_actual": 1000,
+      "traffic_level": "LOW",
+      "event_breakdown": {
+        "Weddings": 0.5,
+        "Celebrations": 0.25,
+        "Birthdays": 0.25
+      }
+    },
+    {
+      "metro": "Shreveport",
+      "traffic_actual": 1000,
+      "traffic_level": "LOW",
+      "event_breakdown": {
+        "Corporate Events": 0.3333,
+        "Mitzvahs": 0.3333,
+        "Celebrations": 0.3333
+      }
+    },
+    {
+      "metro": "Tallahassee",
+      "traffic_actual": 1000,
+      "traffic_level": "LOW",
+      "event_breakdown": {
+        "Weddings": 0.6667,
+        "Celebrations": 0.3333
+      }
+    }
+  ]
+}
