@@ -48,10 +48,11 @@ async function getBrowser() {
     browserPromise = null
   }
   const { default: puppeteer } = await import('puppeteer-core')
-  // In production Vercel functions AWS_LAMBDA_FUNCTION_NAME is set; in
-  // `vercel dev` it isn't (the function runs on the host OS).
-  const isLambda = !!process.env.AWS_LAMBDA_FUNCTION_NAME
-  if (isLambda) {
+  // Vercel Fluid Compute / classic Lambda both run Linux; `vercel dev` runs
+  // the function on the host OS (typically macOS). Use OS as the
+  // discriminator — robust to Vercel runtime changes that affect env vars.
+  const isLinux = process.platform === 'linux'
+  if (isLinux) {
     const { default: chromium } = await import('@sparticuz/chromium')
     browserPromise = puppeteer.launch({
       args: chromium.args,
