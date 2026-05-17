@@ -91,7 +91,8 @@
     color: var(--fg-muted);
   }
   .field input[type="text"],
-  .field input[type="number"] {
+  .field input[type="number"],
+  .field select {
     font-family: var(--sans);
     font-size: 16px;
     font-weight: 300;
@@ -103,7 +104,18 @@
     width: 100%;
     transition: border-color 0.12s ease;
   }
-  .field input:focus {
+  .field select {
+    appearance: none;
+    background-image: linear-gradient(45deg, transparent 50%, var(--fg) 50%),
+                      linear-gradient(135deg, var(--fg) 50%, transparent 50%);
+    background-position: calc(100% - 18px) 50%, calc(100% - 13px) 50%;
+    background-size: 5px 5px, 5px 5px;
+    background-repeat: no-repeat;
+    padding-right: 36px;
+    cursor: pointer;
+  }
+  .field input:focus,
+  .field select:focus {
     border-color: var(--gold);
     box-shadow: inset 0 -1px 0 var(--gold);
   }
@@ -113,6 +125,79 @@
     grid-template-columns: 1fr 1fr 1fr;
     gap: 14px;
   }
+
+  .photos {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+  }
+  .photo-slot {
+    border: 1px dashed var(--border-strong);
+    background: var(--bg-muted);
+    padding: 10px;
+    cursor: pointer;
+    transition: background 0.1s ease, border-color 0.1s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .photo-slot:hover, .photo-slot.drag {
+    background: #f0f0f0;
+    border-color: var(--gold);
+  }
+  .photo-slot .ps-label {
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--fg);
+    margin-bottom: 6px;
+    line-height: 1.3;
+  }
+  .photo-slot .ps-sub {
+    font-size: 10px;
+    color: var(--fg-muted);
+    margin-bottom: 8px;
+  }
+  .photo-slot .ps-drop {
+    flex: 1;
+    border: 1px dashed var(--border);
+    background: var(--bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    font-size: 10px;
+    color: var(--fg-muted);
+    padding: 16px 8px;
+    min-height: 70px;
+  }
+  .photo-slot.filled {
+    border-color: var(--gold);
+  }
+  .photo-slot.filled .ps-drop {
+    background-image: var(--bg-image);
+    background-size: cover;
+    background-position: center;
+    border: 0;
+    color: transparent;
+    min-height: 90px;
+    position: relative;
+  }
+  .photo-slot .ps-clear {
+    margin-top: 6px;
+    font-size: 10px;
+    background: none;
+    border: 0;
+    color: var(--fg-muted);
+    cursor: pointer;
+    text-align: left;
+    padding: 0;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    display: none;
+  }
+  .photo-slot .ps-clear:hover { color: var(--danger); }
+  .photo-slot.filled .ps-clear { display: block; }
   .price-field { position: relative; }
   .price-field input { padding-left: 26px; }
   .price-field::after {
@@ -237,6 +322,13 @@
   <form id="form" autocomplete="off">
 
     <div class="field">
+      <label for="template">Template</label>
+      <select id="template" name="template" required>
+        <option value="executive-group-deal">Executive Group Deal</option>
+      </select>
+    </div>
+
+    <div class="field">
       <label for="companyName">Company Name</label>
       <input type="text" id="companyName" name="companyName" placeholder="e.g. Four Seasons" required>
     </div>
@@ -276,6 +368,45 @@
       </div>
     </div>
 
+    <div class="field">
+      <label>Photos (optional)</label>
+      <div class="hint">Drop or click each slot. Skip a slot to leave that slide unchanged.</div>
+      <details class="help">
+        <summary>How to pick the photos</summary>
+        <ol>
+          <li>Go to the company's Photo Hub</li>
+          <li>Filter by <b>Orientation: Portrait</b></li>
+          <li>Pick photos that are fun and lively!</li>
+        </ol>
+      </details>
+      <div class="photos">
+        <div class="photo-slot" data-slot="0" tabindex="0">
+          <div class="ps-label">Slide 2</div>
+          <div class="ps-sub">Quick Snapshot</div>
+          <div class="ps-drop">Drop or click</div>
+          <button type="button" class="ps-clear">× Clear</button>
+        </div>
+        <div class="photo-slot" data-slot="1" tabindex="0">
+          <div class="ps-label">Slide 3</div>
+          <div class="ps-sub">Goals of the Partnership</div>
+          <div class="ps-drop">Drop or click</div>
+          <button type="button" class="ps-clear">× Clear</button>
+        </div>
+        <div class="photo-slot" data-slot="2" tabindex="0">
+          <div class="ps-label">Slide 4</div>
+          <div class="ps-sub">Why PartySlate</div>
+          <div class="ps-drop">Drop or click</div>
+          <button type="button" class="ps-clear">× Clear</button>
+        </div>
+        <div class="photo-slot" data-slot="3" tabindex="0">
+          <div class="ps-label">Slide 11</div>
+          <div class="ps-sub">Marketing Activities</div>
+          <div class="ps-drop">Drop or click</div>
+          <button type="button" class="ps-clear">× Clear</button>
+        </div>
+      </div>
+    </div>
+
     <div class="actions">
       <button class="btn" id="buildBtn" type="submit" disabled>Build Proposal PDF</button>
       <span class="status" id="status"></span>
@@ -299,10 +430,94 @@ const buildBtn = $('buildBtn')
 const statusEl = $('status')
 
 let csvText = null
+const photos = [null, null, null, null]
 
 function setStatus(text, kind = '') {
   statusEl.className = 'status' + (kind ? ' ' + kind : '')
   statusEl.textContent = text
+}
+
+// ----- Photo slots: click/drop → resize → base64 -----
+const PHOTO_MAX_DIM = 1280
+const PHOTO_JPEG_QUALITY = 0.85
+
+document.querySelectorAll('.photo-slot').forEach(slot => {
+  const idx = Number(slot.dataset.slot)
+  const drop = slot.querySelector('.ps-drop')
+  const clearBtn = slot.querySelector('.ps-clear')
+
+  const hiddenInput = document.createElement('input')
+  hiddenInput.type = 'file'
+  hiddenInput.accept = 'image/*'
+  hiddenInput.style.display = 'none'
+  slot.appendChild(hiddenInput)
+
+  const pick = () => hiddenInput.click()
+  slot.addEventListener('click', e => {
+    if (e.target === clearBtn) return
+    pick()
+  })
+  slot.addEventListener('keydown', e => {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pick() }
+  })
+  ;['dragenter', 'dragover'].forEach(ev =>
+    slot.addEventListener(ev, e => { e.preventDefault(); slot.classList.add('drag') }))
+  ;['dragleave', 'drop'].forEach(ev =>
+    slot.addEventListener(ev, e => { e.preventDefault(); slot.classList.remove('drag') }))
+  slot.addEventListener('drop', e => {
+    const f = e.dataTransfer.files[0]
+    if (f) handlePhoto(idx, f)
+  })
+  hiddenInput.addEventListener('change', e => {
+    const f = e.target.files[0]
+    if (f) handlePhoto(idx, f)
+    hiddenInput.value = ''
+  })
+  clearBtn.addEventListener('click', e => {
+    e.stopPropagation()
+    photos[idx] = null
+    slot.classList.remove('filled')
+    drop.style.removeProperty('--bg-image')
+    drop.style.removeProperty('background-image')
+    drop.textContent = 'Drop or click'
+  })
+})
+
+async function handlePhoto(idx, file) {
+  try {
+    const dataUrl = await resizeImage(file, PHOTO_MAX_DIM, PHOTO_JPEG_QUALITY)
+    photos[idx] = dataUrl
+    const slot = document.querySelector(`.photo-slot[data-slot="${idx}"]`)
+    const drop = slot.querySelector('.ps-drop')
+    slot.classList.add('filled')
+    drop.style.backgroundImage = `url("${dataUrl}")`
+    drop.textContent = ''
+  } catch (e) {
+    setStatus('Photo failed: ' + e.message, 'err')
+  }
+}
+
+function resizeImage(file, maxDim, quality) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = () => {
+      const img = new Image()
+      img.onload = () => {
+        const scale = Math.min(1, maxDim / Math.max(img.width, img.height))
+        const w = Math.round(img.width * scale)
+        const h = Math.round(img.height * scale)
+        const canvas = document.createElement('canvas')
+        canvas.width = w
+        canvas.height = h
+        canvas.getContext('2d').drawImage(img, 0, 0, w, h)
+        resolve(canvas.toDataURL('image/jpeg', quality))
+      }
+      img.onerror = () => reject(new Error('cannot decode image'))
+      img.src = reader.result
+    }
+    reader.onerror = () => reject(new Error('cannot read file'))
+    reader.readAsDataURL(file)
+  })
 }
 
 function refreshButton() {
@@ -363,11 +578,13 @@ form.addEventListener('submit', async (e) => {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
+        template: $('template').value,
         companyName: companyInput.value.trim(),
         csv: csvText,
         listPrice: Number(listInput.value),
         discountedPrice: Number(discInput.value),
         finalPrice: Number(finalInput.value),
+        photos,
       }),
     })
     if (!r.ok) {

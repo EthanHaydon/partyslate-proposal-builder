@@ -4,7 +4,6 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "vercel dev",
     "deploy": "vercel deploy"
   },
   "engines": {
@@ -17,6 +16,6 @@
     "puppeteer-core": "^23.11.1"
   },
   "devDependencies": {
-    "vercel": "^53.1.1"
+    "vercel": "^54.1.0"
   }
 }
