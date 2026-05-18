@@ -124,6 +124,7 @@ export default async function handler(req, res) {
       listPrice,
       discountedPrice,
       finalPrice,
+      investmentSummary,
       photos,
     } = req.body || {}
 
@@ -180,10 +181,15 @@ export default async function handler(req, res) {
       generated: monthYearLabel,
       sourceLabel: `Source: PartySlate baseline traffic · ${selectedMarkets.length} market${selectedMarkets.length === 1 ? '' : 's'}`,
     })
+    const summary = investmentSummary || {}
     const pricingHtml = renderPricingHtml({
       listPrice: list,
       discountedPrice: disc,
       finalPrice: fin,
+      profiles: typeof summary.profiles === 'string' ? summary.profiles : '',
+      includes: Array.isArray(summary.includes) ? summary.includes : [],
+      discounting: typeof summary.discounting === 'string' ? summary.discounting : '',
+      billing: typeof summary.billing === 'string' ? summary.billing : '',
     })
 
     const browser = await getBrowser()

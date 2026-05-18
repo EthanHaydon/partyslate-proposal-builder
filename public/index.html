@@ -126,6 +126,42 @@
     gap: 14px;
   }
 
+  .section-heading {
+    font-family: var(--sans);
+    font-weight: 500;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: var(--fg);
+    margin: 36px 0 16px 0;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .checkbox-group {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px 18px;
+    margin-top: 4px;
+  }
+  .checkbox-group label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    font-weight: 300;
+    color: var(--fg-body);
+    cursor: pointer;
+    text-transform: none;
+    letter-spacing: 0;
+  }
+  .checkbox-group input[type="checkbox"] {
+    width: 14px;
+    height: 14px;
+    accent-color: var(--gold);
+    cursor: pointer;
+  }
+
   .photos {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
@@ -368,6 +404,42 @@
       </div>
     </div>
 
+    <h2 class="section-heading">Investment Summary</h2>
+    <div class="hint" style="margin-bottom: 14px;">Populates the left column of slide 10. The pricing graphic on the right uses the prices above.</div>
+
+    <div class="field">
+      <label for="profilesText">Profiles</label>
+      <input type="text" id="profilesText" name="profilesText" placeholder="e.g. X, Y, Z">
+    </div>
+
+    <div class="field">
+      <label>Includes</label>
+      <div class="checkbox-group" id="includesGroup">
+        <label><input type="checkbox" value="Platinum PartySlate Profile placement"> Platinum PartySlate Profile placement</label>
+        <label><input type="checkbox" value="Premium PartySlate Profile placement"> Premium PartySlate Profile placement</label>
+        <label><input type="checkbox" value="Onboarding, Dedicated Support, Performance Reviews"> Onboarding, Dedicated Support, Performance Reviews</label>
+        <label><input type="checkbox" value="Photohub"> Photohub</label>
+        <label><input type="checkbox" value="Integrations"> Integrations</label>
+        <label><input type="checkbox" value="Media Sponsorship"> Media Sponsorship</label>
+        <label><input type="checkbox" value="Instagram Spotlight"> Instagram Spotlight</label>
+      </div>
+    </div>
+
+    <div class="field">
+      <label for="discountingText">Discounting</label>
+      <input type="text" id="discountingText" name="discountingText" placeholder="e.g. 30% multi-location group discount applied">
+    </div>
+
+    <div class="field">
+      <label for="billingSelect">Billing</label>
+      <select id="billingSelect" name="billingSelect">
+        <option value="Annual">Annual</option>
+        <option value="Quarterly">Quarterly</option>
+      </select>
+    </div>
+
+    <h2 class="section-heading">Photos</h2>
+
     <div class="field">
       <label>Photos (optional)</label>
       <div class="hint">Drop or click each slot. Skip a slot to leave that slide unchanged.</div>
@@ -584,6 +656,12 @@ form.addEventListener('submit', async (e) => {
         listPrice: Number(listInput.value),
         discountedPrice: Number(discInput.value),
         finalPrice: Number(finalInput.value),
+        investmentSummary: {
+          profiles: $('profilesText').value.trim(),
+          includes: [...document.querySelectorAll('#includesGroup input:checked')].map(el => el.value),
+          discounting: $('discountingText').value.trim(),
+          billing: $('billingSelect').value,
+        },
         photos,
       }),
     })
