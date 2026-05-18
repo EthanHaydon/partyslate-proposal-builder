@@ -357,6 +357,7 @@
 
   <form id="form" autocomplete="off">
 
+    <h2 class="section-heading">Template Selection</h2>
     <div class="field">
       <label for="template">Template</label>
       <select id="template" name="template" required>
@@ -364,81 +365,12 @@
       </select>
     </div>
 
+    <h2 class="section-heading">Who is the proposal For?</h2>
+
     <div class="field">
       <label for="companyName">Company Name</label>
       <input type="text" id="companyName" name="companyName" placeholder="e.g. Four Seasons" required>
     </div>
-
-    <div class="field">
-      <label>Inquiry CSV</label>
-      <div class="dropzone" id="dz" tabindex="0" role="button" aria-label="Drop CSV here or click to choose">
-        <div class="dz-primary">Drop CSV here</div>
-        <div class="dz-secondary">or click to choose · used for the dashboard + benchmarking slides</div>
-        <div class="dz-filename" id="filename"></div>
-      </div>
-      <input type="file" id="file" accept=".csv,text/csv">
-      <details class="help">
-        <summary>How to get the CSV</summary>
-        <ol>
-          <li><a href="https://52d6fdd7.us2a.app.preset.io/superset/dashboard/40/" target="_blank" rel="noopener noreferrer">Open the Preset dashboard ↗</a></li>
-          <li>Add company names</li>
-          <li>Add timelines</li>
-          <li>Export CSV file</li>
-          <li>Drop CSV above</li>
-        </ol>
-      </details>
-    </div>
-
-    <div class="prices">
-      <div class="field price-field">
-        <label for="listPrice">List Price</label>
-        <input type="number" id="listPrice" name="listPrice" min="0" step="1" placeholder="0" required>
-      </div>
-      <div class="field price-field">
-        <label for="discountedPrice">Discounted</label>
-        <input type="number" id="discountedPrice" name="discountedPrice" min="0" step="1" placeholder="0" required>
-      </div>
-      <div class="field price-field">
-        <label for="finalPrice">Final (Upfront)</label>
-        <input type="number" id="finalPrice" name="finalPrice" min="0" step="1" placeholder="0" required>
-      </div>
-    </div>
-
-    <h2 class="section-heading">Investment Summary</h2>
-    <div class="hint" style="margin-bottom: 14px;">Populates the left column of slide 10. The pricing graphic on the right uses the prices above.</div>
-
-    <div class="field">
-      <label for="profilesText">Profiles</label>
-      <input type="text" id="profilesText" name="profilesText" placeholder="e.g. X, Y, Z">
-    </div>
-
-    <div class="field">
-      <label>Includes</label>
-      <div class="checkbox-group" id="includesGroup">
-        <label><input type="checkbox" value="Platinum PartySlate Profile placement"> Platinum PartySlate Profile placement</label>
-        <label><input type="checkbox" value="Premium PartySlate Profile placement"> Premium PartySlate Profile placement</label>
-        <label><input type="checkbox" value="Onboarding, Dedicated Support, Performance Reviews"> Onboarding, Dedicated Support, Performance Reviews</label>
-        <label><input type="checkbox" value="Photohub"> Photohub</label>
-        <label><input type="checkbox" value="Integrations"> Integrations</label>
-        <label><input type="checkbox" value="Media Sponsorship"> Media Sponsorship</label>
-        <label><input type="checkbox" value="Instagram Spotlight"> Instagram Spotlight</label>
-      </div>
-    </div>
-
-    <div class="field">
-      <label for="discountingText">Discounting</label>
-      <input type="text" id="discountingText" name="discountingText" placeholder="e.g. 30% multi-location group discount applied">
-    </div>
-
-    <div class="field">
-      <label for="billingSelect">Billing</label>
-      <select id="billingSelect" name="billingSelect">
-        <option value="Annual">Annual</option>
-        <option value="Quarterly">Quarterly</option>
-      </select>
-    </div>
-
-    <h2 class="section-heading">Photos</h2>
 
     <div class="field">
       <label>Photos (optional)</label>
@@ -477,6 +409,77 @@
           <button type="button" class="ps-clear">× Clear</button>
         </div>
       </div>
+    </div>
+
+    <h2 class="section-heading">Lets review Performance</h2>
+
+    <div class="field">
+      <label>Inquiry CSV</label>
+      <div class="dropzone" id="dz" tabindex="0" role="button" aria-label="Drop CSV here or click to choose">
+        <div class="dz-primary">Drop CSV here</div>
+        <div class="dz-secondary">or click to choose · used for the dashboard + benchmarking slides</div>
+        <div class="dz-filename" id="filename"></div>
+      </div>
+      <input type="file" id="file" accept=".csv,text/csv">
+      <details class="help">
+        <summary>How to get the CSV</summary>
+        <ol>
+          <li><a href="https://52d6fdd7.us2a.app.preset.io/superset/dashboard/40/" target="_blank" rel="noopener noreferrer">Open the Preset dashboard ↗</a></li>
+          <li>Add company names</li>
+          <li>Add timelines</li>
+          <li>Export CSV file</li>
+          <li>Drop CSV above</li>
+        </ol>
+      </details>
+    </div>
+
+    <h2 class="section-heading">Investment Summary</h2>
+    <div class="hint" style="margin-bottom: 14px;">Populates slide 10. Pricing fields drive the graphic on the right; the rest fills the left column.</div>
+
+    <div class="prices">
+      <div class="field price-field">
+        <label for="listPrice">List Price</label>
+        <input type="number" id="listPrice" name="listPrice" min="0" step="1" placeholder="0" required>
+      </div>
+      <div class="field price-field">
+        <label for="discountedPrice">Discounted</label>
+        <input type="number" id="discountedPrice" name="discountedPrice" min="0" step="1" placeholder="0" required>
+      </div>
+      <div class="field price-field">
+        <label for="finalPrice">Final (Upfront)</label>
+        <input type="number" id="finalPrice" name="finalPrice" min="0" step="1" placeholder="0" required>
+      </div>
+    </div>
+
+    <div class="field">
+      <label for="profilesText">Profiles</label>
+      <input type="text" id="profilesText" name="profilesText" placeholder="e.g. X, Y, Z">
+    </div>
+
+    <div class="field">
+      <label>Includes</label>
+      <div class="checkbox-group" id="includesGroup">
+        <label><input type="checkbox" value="Platinum PartySlate Profile placement"> Platinum PartySlate Profile placement</label>
+        <label><input type="checkbox" value="Premium PartySlate Profile placement"> Premium PartySlate Profile placement</label>
+        <label><input type="checkbox" value="Onboarding, Dedicated Support, Performance Reviews"> Onboarding, Dedicated Support, Performance Reviews</label>
+        <label><input type="checkbox" value="Photohub"> Photohub</label>
+        <label><input type="checkbox" value="Integrations"> Integrations</label>
+        <label><input type="checkbox" value="Media Sponsorship"> Media Sponsorship</label>
+        <label><input type="checkbox" value="Instagram Spotlight"> Instagram Spotlight</label>
+      </div>
+    </div>
+
+    <div class="field">
+      <label for="discountingText">Discounting</label>
+      <input type="text" id="discountingText" name="discountingText" placeholder="e.g. 30% multi-location group discount applied">
+    </div>
+
+    <div class="field">
+      <label for="billingSelect">Billing</label>
+      <select id="billingSelect" name="billingSelect">
+        <option value="Annual">Annual</option>
+        <option value="Quarterly">Quarterly</option>
+      </select>
     </div>
 
     <div class="actions">
