@@ -33,7 +33,6 @@ const PHOTO_TARGETS = {
   4:  { x: 367, y: 55, w: 353, h: 340 },
   11: { x: 367, y: 55, w: 353, h: 340 },
 }
-const PHOTO_BORDER_WIDTH = 1
 // Photos[0..3] map to slides 2, 3, 4, 11 in that order.
 const PHOTO_SLOTS = [2, 3, 4, 11]
 
