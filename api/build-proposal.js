@@ -276,14 +276,6 @@ export default async function handler(req, res) {
         const drawY = target.y + (target.h - drawH) / 2
         const page = out.getPage(slide - 1)
         page.drawImage(img, { x: drawX, y: drawY, width: drawW, height: drawH })
-        page.drawRectangle({
-          x: drawX,
-          y: drawY,
-          width: drawW,
-          height: drawH,
-          borderColor: BLACK,
-          borderWidth: PHOTO_BORDER_WIDTH,
-        })
       }
     }
 
