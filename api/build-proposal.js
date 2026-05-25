@@ -293,10 +293,12 @@ function preparePartySlateProposalSales(body, errors) {
         // (sourceIdx 8); source page 10 = Major tier card grid (sourceIdx 9).
         // Keep only the one matching the chosen metro class.
         { kind: 'static',  sourceIdx: cls === 'major' ? 9 : 8 },              // 10 matching reference
-        { kind: 'static',  sourceIdx: 10, photoSlot: 3 },                     // 11 Extra Value
-        { kind: 'static',  sourceIdx: 11 },                                   // 12 Trusted
-        { kind: 'static',  sourceIdx: 12 },                                   // 13 closer
-        { kind: 'static',  sourceIdx: 13 },                                   // 14 closer
+        // Skip sourceIdx 10 — that's the static Investment Summary example
+        // placeholder ($14,340 / 80% / Premier) baked into the source deck.
+        // Our dynamic pricing tiers slide above is the real Investment Summary.
+        { kind: 'static',  sourceIdx: 11, photoSlot: 3 },                     // 11 Extra Value
+        { kind: 'static',  sourceIdx: 12 },                                   // 12 Trusted
+        { kind: 'static',  sourceIdx: 13 },                                   // 13 closer
       ]
     },
   }
