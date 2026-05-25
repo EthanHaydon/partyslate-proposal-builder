@@ -9,26 +9,28 @@ import { renderMarketsHtml } from '../lib/market-template.js'
 import { renderCoverHtml } from '../lib/cover-template.js'
 import { renderPricingHtml } from '../lib/pricing-template.js'
 import { renderComparisonHtml } from '../lib/comparison-template.js'
+import { renderMarketPieHtml } from '../lib/market-pie-template.js'
+import { renderPricingTiersHtml } from '../lib/pricing-tiers-template.js'
 
-// Vercel's Fluid Compute doesn't always set AWS_EXECUTION_ENV in the form
-// @sparticuz/chromium expects. Force-set AWS_LAMBDA_JS_RUNTIME so its Lambda
-// detection passes and the system-lib tarball (libnss3 etc.) extracts.
 process.env.AWS_LAMBDA_JS_RUNTIME = process.env.AWS_LAMBDA_JS_RUNTIME || 'nodejs20.x'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
-const TEMPLATE_PDF_PATH = join(__dirname, '..', 'public', 'template.pdf')
-const MARKETS_PATH = join(__dirname, '..', 'public', 'markets.json')
+const PUBLIC_DIR = join(__dirname, '..', 'public')
+const MARKETS_PATH = join(PUBLIC_DIR, 'markets.json')
 
 const SLIDE_W = 1280
 const SLIDE_H = 720
+const TARGET_W = 720   // 10 in @ 72 pt
+const TARGET_H = 450   // 6.25 in @ 72 pt
 
-// All photo placements share the same box: the right-column gray placeholder
-// area on slides 2, 3, 4, 11. Coords are PDF points on a 720×450 page
-// (10 × 6.25 in), origin bottom-left, with 55pt top/bottom inset.
+// All four photo slots use the same target box (right-column gray placeholder
+// on each photo-bearing slide). 55pt T/B inset, full width of the right column.
 const PHOTO_TARGET = { x: 367, y: 55, w: 353, h: 340 }
 
+const TEMPLATE_IDS = ['executive-group-deal', 'partyslate-proposal-sales']
+
 let browserPromise
-let TEMPLATE_BYTES_CACHE = null
+const TEMPLATE_BYTES_CACHE = new Map()
 let MARKETS_CACHE = null
 
 async function getBrowser() {
@@ -38,9 +40,6 @@ async function getBrowser() {
     browserPromise = null
   }
   const { default: puppeteer } = await import('puppeteer-core')
-  // Vercel Fluid Compute / classic Lambda both run Linux; `vercel dev` runs
-  // the function on the host OS (typically macOS). Use OS as the
-  // discriminator — robust to Vercel runtime changes that affect env vars.
   const isLinux = process.platform === 'linux'
   if (isLinux) {
     const { default: chromium } = await import('@sparticuz/chromium')
@@ -61,9 +60,11 @@ async function getBrowser() {
   return browserPromise
 }
 
-function getTemplateBytes() {
-  if (!TEMPLATE_BYTES_CACHE) TEMPLATE_BYTES_CACHE = readFileSync(TEMPLATE_PDF_PATH)
-  return TEMPLATE_BYTES_CACHE
+function getTemplateBytes(filename) {
+  if (!TEMPLATE_BYTES_CACHE.has(filename)) {
+    TEMPLATE_BYTES_CACHE.set(filename, readFileSync(join(PUBLIC_DIR, filename)))
+  }
+  return TEMPLATE_BYTES_CACHE.get(filename)
 }
 
 function getMarkets() {
@@ -100,9 +101,205 @@ function safeFilename(s) {
   return (s || 'Proposal').trim().replace(/[^A-Za-z0-9]+/g, '_').replace(/^_+|_+$/g, '') || 'Proposal'
 }
 
-// Compute "today/proposed" card stats from one tab of the uploaded xlsx.
-// Sheet shape (from the template): rows of { Company Name, Company type,
-// Membership Level, Contract End Date, Group Tcv, ... }.
+// ---------- Executive Group Deal preparation ----------
+function prepareExecutiveGroupDeal(body, errors) {
+  const {
+    companyName,
+    csv,
+    listPrice,
+    discountedPrice,
+    finalPrice,
+    investmentSummary,
+    comparison,
+  } = body
+
+  if (!csv || typeof csv !== 'string') errors.push('missing csv')
+  const list = Number(listPrice)
+  const disc = Number(discountedPrice)
+  const fin = Number(finalPrice)
+  if (!Number.isFinite(list) || !Number.isFinite(disc) || !Number.isFinite(fin)) {
+    errors.push('pricing fields must be numbers (listPrice, discountedPrice, finalPrice)')
+  }
+  if (errors.length) return null
+
+  // CSV → aggregates → metros
+  const rows = parseCsv(csv)
+  const data = computeAggregates(rows, companyName)
+  const metrosInCsv = [...new Set(
+    rows.map(r => (r.company_metro_area || '').trim()).filter(Boolean),
+  )]
+  const markets = getMarkets()
+  const byName = new Map(markets.markets.map(m => [m.metro, m]))
+  const LEVEL_RANK = { HIGH: 0, MODERATE: 1, LOW: 2 }
+  const selectedMarkets = metrosInCsv
+    .map(m => byName.get(m))
+    .filter(Boolean)
+    .sort((a, b) =>
+      (LEVEL_RANK[a.traffic_level] - LEVEL_RANK[b.traffic_level]) ||
+      (b.traffic_actual - a.traffic_actual),
+    )
+
+  // Optional comparison slide
+  const cmp = comparison || {}
+  const includeComparison = !!(cmp.include && cmp.xlsxBase64)
+  let comparisonHtml = null
+  if (includeComparison) {
+    const { current, proposed } = parseComparisonXlsx(cmp.xlsxBase64)
+    const todayStats = statsFromSheet(current)
+    const proposedSheetStats = statsFromSheet(proposed)
+    const proposedAnnualSpend = disc
+    const propertiesAdded = Math.max(
+      proposedSheetStats.accountCount - todayStats.accountCount,
+      0,
+    )
+    const deltaSpend = proposedAnnualSpend - todayStats.annualSpend
+    comparisonHtml = renderComparisonHtml({
+      title: (cmp.title || '').trim() || `${companyName.trim()} partnership — today vs. proposed`,
+      subtitle: (cmp.subtitle || '').trim(),
+      today: {
+        subtitle: (cmp.todaySubtitle || '').trim() || 'Multiple contracts and renewal dates',
+        annualSpend: todayStats.annualSpend,
+        accountCount: todayStats.accountCount,
+        wpcPaid: todayStats.wpcPaid,
+        clientPaid: todayStats.clientPaid,
+        bullets: Array.isArray(cmp.todayBullets) ? cmp.todayBullets : [],
+      },
+      proposed: {
+        subtitle: (cmp.proposedSubtitle || '').trim() || 'Single enterprise contract, single renewal',
+        annualSpend: proposedAnnualSpend,
+        propertiesAdded,
+        deltaSpend,
+        bullets: Array.isArray(cmp.proposedBullets) ? cmp.proposedBullets : [],
+      },
+    })
+  }
+
+  const { month, year } = currentMonthYear()
+  const monthYearLabel = `${month} ${year}`
+  const summary = investmentSummary || {}
+
+  const htmls = {
+    cover: renderCoverHtml({ companyName: companyName.trim(), month, year }),
+    dashboard: renderDashboardHtml(data),
+    markets: renderMarketsHtml({
+      markets: selectedMarkets,
+      groupName: companyName.trim(),
+      generated: monthYearLabel,
+      sourceLabel: `Source: PartySlate baseline traffic · ${selectedMarkets.length} market${selectedMarkets.length === 1 ? '' : 's'}`,
+    }),
+    pricing: renderPricingHtml({
+      listPrice: list,
+      discountedPrice: disc,
+      finalPrice: fin,
+      profiles: typeof summary.profiles === 'string' ? summary.profiles : '',
+      includes: Array.isArray(summary.includes) ? summary.includes : [],
+      discounting: typeof summary.discounting === 'string' ? summary.discounting : '',
+      billing: typeof summary.billing === 'string' ? summary.billing : '',
+    }),
+  }
+  if (comparisonHtml) htmls.comparison = comparisonHtml
+
+  return {
+    pdfFile: 'template.pdf',
+    htmls,
+    buildDescriptors(pdfs) {
+      const WHITE = rgb(1, 1, 1)
+      const BLACK = rgb(0, 0, 0)
+      const descriptors = [
+        { kind: 'dynamic', bytes: pdfs.cover,     bg: BLACK },               // 1. Cover
+        { kind: 'static',  sourceIdx: 1, photoSlot: 0 },                     // 2. Quick Snapshot
+        { kind: 'static',  sourceIdx: 2, photoSlot: 1 },                     // 3. Goals
+        { kind: 'static',  sourceIdx: 3, photoSlot: 2 },                     // 4. Why
+        { kind: 'static',  sourceIdx: 4 },                                   // 5. Stats
+        { kind: 'dynamic', bytes: pdfs.dashboard, bg: WHITE },               // 6. Dashboard
+        { kind: 'dynamic', bytes: pdfs.markets,   bg: WHITE },               // 7. Markets
+      ]
+      if (pdfs.comparison) {
+        descriptors.push({ kind: 'dynamic', bytes: pdfs.comparison, bg: WHITE }) // 8. Comparison (optional)
+      }
+      descriptors.push(
+        { kind: 'static',  sourceIdx: 7 },                                   // CS Support
+        { kind: 'static',  sourceIdx: 8 },                                   // Integrations
+        { kind: 'dynamic', bytes: pdfs.pricing,   bg: WHITE },               // Investment Summary
+        { kind: 'static',  sourceIdx: 10, photoSlot: 3 },                    // Marketing Activities
+        { kind: 'static',  sourceIdx: 11 },                                  // Trusted Brands
+        { kind: 'static',  sourceIdx: 12 },                                  // Closer
+      )
+      return descriptors
+    },
+  }
+}
+
+// ---------- PartySlate Proposal Sales preparation ----------
+function preparePartySlateProposalSales(body, errors) {
+  const {
+    companyName,
+    metro,
+    metroClass,
+    subscriptionTier,
+    discountTier,
+    upfront10,
+  } = body
+
+  if (!metro || typeof metro !== 'string') errors.push('missing metro')
+  const cls = (metroClass || '').toString().toLowerCase()
+  if (cls !== 'standard' && cls !== 'major') errors.push('metroClass must be "standard" or "major"')
+  const VALID_TIERS = new Set(['Portfolio', 'Premier', 'Platinum'])
+  if (!VALID_TIERS.has(subscriptionTier)) errors.push('subscriptionTier must be Portfolio | Premier | Platinum')
+  const dt = Number(discountTier)
+  if (!Number.isFinite(dt) || dt < 0 || dt > 100) errors.push('discountTier must be a number 0–100')
+  if (errors.length) return null
+
+  const markets = getMarkets()
+  const market = markets.markets.find(m => m.metro === metro)
+  if (!market) {
+    errors.push(`no baseline data for metro "${metro}"`)
+    return null
+  }
+
+  const { month, year } = currentMonthYear()
+  const htmls = {
+    cover: renderCoverHtml({ companyName: companyName.trim(), month, year }),
+    marketPie: renderMarketPieHtml({ market }),
+    pricingTiers: renderPricingTiersHtml({
+      metroClass: cls,
+      tier: subscriptionTier,
+      discountPct: dt,
+      upfront10: !!upfront10,
+    }),
+  }
+
+  return {
+    pdfFile: 'template-standard.pdf',
+    htmls,
+    buildDescriptors(pdfs) {
+      const WHITE = rgb(1, 1, 1)
+      const BLACK = rgb(0, 0, 0)
+      // 14-page Standard deck:
+      // 1 cover · 2-4 photos · 5 stats · 6 market pie · 7 CS · 8 Integrations
+      // 9 Investment Summary · 10 pricing reference (kept as-is)
+      // 11 Extra Value (photo 4) · 12 Trusted · 13-14 closers
+      return [
+        { kind: 'dynamic', bytes: pdfs.cover,        bg: BLACK },             // 1
+        { kind: 'static',  sourceIdx: 1, photoSlot: 0 },                      // 2
+        { kind: 'static',  sourceIdx: 2, photoSlot: 1 },                      // 3
+        { kind: 'static',  sourceIdx: 3, photoSlot: 2 },                      // 4
+        { kind: 'static',  sourceIdx: 4 },                                    // 5
+        { kind: 'dynamic', bytes: pdfs.marketPie,    bg: WHITE },             // 6
+        { kind: 'static',  sourceIdx: 6 },                                    // 7
+        { kind: 'static',  sourceIdx: 7 },                                    // 8
+        { kind: 'dynamic', bytes: pdfs.pricingTiers, bg: WHITE },             // 9
+        { kind: 'static',  sourceIdx: 9 },                                    // 10 (keep as-is)
+        { kind: 'static',  sourceIdx: 10, photoSlot: 3 },                     // 11 Extra Value
+        { kind: 'static',  sourceIdx: 11 },                                   // 12 Trusted
+        { kind: 'static',  sourceIdx: 12 },                                   // 13 closer
+        { kind: 'static',  sourceIdx: 13 },                                   // 14 closer
+      ]
+    },
+  }
+}
+
+// ---------- Helpers shared by Executive template ----------
 function statsFromSheet(rows) {
   const accounts = rows.filter(r => (r['Company Name'] || '').trim().length > 0)
   let annualSpend = 0
@@ -117,22 +314,15 @@ function statsFromSheet(rows) {
       if (/paid by facility/i.test(tcv)) clientPaid += 1
       else wpcPaid += 1
     } else {
-      // empty/blank Group Tcv = WPC-paid but amount tbd
       wpcPaid += 1
     }
   }
-  return {
-    accountCount: accounts.length,
-    annualSpend,
-    wpcPaid,
-    clientPaid,
-  }
+  return { accountCount: accounts.length, annualSpend, wpcPaid, clientPaid }
 }
 
 function parseComparisonXlsx(base64) {
   const buf = Buffer.from(base64, 'base64')
   const wb = xlsxLib.read(buf, { type: 'buffer' })
-  // Tolerant lookup — accept "Current"/"current"/"Today" etc.
   const findSheet = (re) => {
     const name = wb.SheetNames.find(n => re.test(n))
     return name ? xlsxLib.utils.sheet_to_json(wb.Sheets[name], { defval: '' }) : []
@@ -143,6 +333,7 @@ function parseComparisonXlsx(base64) {
   }
 }
 
+// ---------- HTTP handler ----------
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     res.status(405).json({ error: 'method not allowed' })
@@ -150,177 +341,36 @@ export default async function handler(req, res) {
   }
 
   try {
-    const {
-      template,
-      companyName,
-      csv,
-      listPrice,
-      discountedPrice,
-      finalPrice,
-      investmentSummary,
-      comparison,
-      photos,
-    } = req.body || {}
-
-    // Only one template is supported today. The form field is in place so
-    // future templates can be plugged in without changing the client.
-    const SUPPORTED_TEMPLATES = new Set(['executive-group-deal'])
-    if (template && !SUPPORTED_TEMPLATES.has(template)) {
+    const body = req.body || {}
+    const template = body.template || 'executive-group-deal'
+    if (!TEMPLATE_IDS.includes(template)) {
       res.status(400).json({ error: `unknown template: ${template}` })
       return
     }
-
-    if (!companyName || typeof companyName !== 'string') {
+    if (!body.companyName || typeof body.companyName !== 'string') {
       res.status(400).json({ error: 'missing companyName' })
       return
     }
-    if (!csv || typeof csv !== 'string') {
-      res.status(400).json({ error: 'missing csv (string body field)' })
+
+    const errors = []
+    const prep = template === 'partyslate-proposal-sales'
+      ? preparePartySlateProposalSales(body, errors)
+      : prepareExecutiveGroupDeal(body, errors)
+    if (!prep) {
+      res.status(400).json({ error: errors.join('; ') })
       return
     }
-    const list = Number(listPrice)
-    const disc = Number(discountedPrice)
-    const fin = Number(finalPrice)
-    if (!Number.isFinite(list) || !Number.isFinite(disc) || !Number.isFinite(fin)) {
-      res.status(400).json({ error: 'pricing fields must be numbers (listPrice, discountedPrice, finalPrice)' })
-      return
-    }
 
-    // ----- Parse CSV, compute aggregates, pick markets -----
-    const rows = parseCsv(csv)
-    const data = computeAggregates(rows, companyName)
-    const metrosInCsv = [...new Set(
-      rows.map(r => (r.company_metro_area || '').trim()).filter(Boolean),
-    )]
-    const markets = getMarkets()
-    const byName = new Map(markets.markets.map(m => [m.metro, m]))
-    const LEVEL_RANK = { HIGH: 0, MODERATE: 1, LOW: 2 }
-    const selectedMarkets = metrosInCsv
-      .map(m => byName.get(m))
-      .filter(Boolean)
-      .sort((a, b) =>
-        (LEVEL_RANK[a.traffic_level] - LEVEL_RANK[b.traffic_level]) ||
-        (b.traffic_actual - a.traffic_actual),
-      )
-
-    // ----- Maybe compute Current vs Proposed stats from uploaded xlsx -----
-    const cmp = comparison || {}
-    const includeComparison = !!(cmp.include && cmp.xlsxBase64)
-    let comparisonHtml = null
-    if (includeComparison) {
-      try {
-        const { current, proposed } = parseComparisonXlsx(cmp.xlsxBase64)
-        const todayStats = statsFromSheet(current)
-        const proposedSheetStats = statsFromSheet(proposed)
-        // Proposed annual spend uses the Discounted Price the user entered
-        // (per 1a in the spec). The xlsx-derived spend is the un-discounted
-        // sum and isn't surfaced; account count + properties-added come from
-        // the proposed tab.
-        const proposedAnnualSpend = disc
-        const propertiesAdded = Math.max(
-          proposedSheetStats.accountCount - todayStats.accountCount,
-          0,
-        )
-        const deltaSpend = proposedAnnualSpend - todayStats.annualSpend
-        comparisonHtml = renderComparisonHtml({
-          title: (cmp.title || '').trim() || `${companyName.trim()} partnership — today vs. proposed`,
-          subtitle: (cmp.subtitle || '').trim(),
-          today: {
-            subtitle: (cmp.todaySubtitle || '').trim() || 'Multiple contracts and renewal dates',
-            annualSpend: todayStats.annualSpend,
-            accountCount: todayStats.accountCount,
-            wpcPaid: todayStats.wpcPaid,
-            clientPaid: todayStats.clientPaid,
-            bullets: Array.isArray(cmp.todayBullets) ? cmp.todayBullets : [],
-          },
-          proposed: {
-            subtitle: (cmp.proposedSubtitle || '').trim() || 'Single enterprise contract, single renewal',
-            annualSpend: proposedAnnualSpend,
-            propertiesAdded,
-            deltaSpend,
-            bullets: Array.isArray(cmp.proposedBullets) ? cmp.proposedBullets : [],
-          },
-        })
-      } catch (e) {
-        console.error('comparison xlsx parse failed:', e)
-        res.status(400).json({ error: 'could not parse Current vs Proposed xlsx: ' + e.message })
-        return
-      }
-    }
-
-    // ----- Render dynamic slides -----
-    const { month, year } = currentMonthYear()
-    const monthYearLabel = `${month} ${year}`
-
-    const coverHtml = renderCoverHtml({ companyName: companyName.trim(), month, year })
-    const dashboardHtml = renderDashboardHtml(data)
-    const marketsHtml = renderMarketsHtml({
-      markets: selectedMarkets,
-      groupName: companyName.trim(),
-      generated: monthYearLabel,
-      sourceLabel: `Source: PartySlate baseline traffic · ${selectedMarkets.length} market${selectedMarkets.length === 1 ? '' : 's'}`,
-    })
-    const summary = investmentSummary || {}
-    const pricingHtml = renderPricingHtml({
-      listPrice: list,
-      discountedPrice: disc,
-      finalPrice: fin,
-      profiles: typeof summary.profiles === 'string' ? summary.profiles : '',
-      includes: Array.isArray(summary.includes) ? summary.includes : [],
-      discounting: typeof summary.discounting === 'string' ? summary.discounting : '',
-      billing: typeof summary.billing === 'string' ? summary.billing : '',
-    })
-
+    // Render every dynamic slide concurrently on a shared browser.
     const browser = await getBrowser()
-    // Render slides concurrently. Each opens its own page on the shared browser.
-    const renderJobs = [
-      renderSlideToPdf(browser, coverHtml),
-      renderSlideToPdf(browser, dashboardHtml),
-      renderSlideToPdf(browser, marketsHtml),
-      renderSlideToPdf(browser, pricingHtml),
-    ]
-    if (comparisonHtml) renderJobs.push(renderSlideToPdf(browser, comparisonHtml))
-    const renderedPdfs = await Promise.all(renderJobs)
-    const [coverPdf, dashboardPdf, marketsPdf, pricingPdf, comparisonPdf] = renderedPdfs
-
-    // ----- Assemble final PDF -----
-    // The Google Slides template uses 10 × 6.25 in pages (720 × 450 pt).
-    // Dynamic slides are rendered at 13.333 × 7.5 in (16:9) so the existing
-    // inquiry-dashboard layouts work unchanged. Embed each dynamic PDF as a
-    // form XObject and draw it scale-to-fit-width on a 10 × 6.25 page —
-    // small letterbox bars top/bottom are hidden by per-slide bg fill.
-    const baseDoc = await PDFDocument.load(getTemplateBytes())
-    const TARGET_W = 720
-    const TARGET_H = 450
-
-    const WHITE = rgb(1, 1, 1)
-    const BLACK = rgb(0, 0, 0)
-
-    // Page descriptors — one entry per OUTPUT page, in order.
-    //   kind  'dynamic' = render a freshly-built PDF page
-    //         'static'  = copy page sourceIdx (0-indexed) from baseDoc
-    //   photoSlot 0..3 = which uploaded photo (if any) to overlay on this page
-    const descriptors = [
-      { kind: 'dynamic', bytes: coverPdf,     bg: BLACK },                 // 1. Cover
-      { kind: 'static',  sourceIdx: 1, photoSlot: 0 },                     // 2. Quick Snapshot
-      { kind: 'static',  sourceIdx: 2, photoSlot: 1 },                     // 3. Goals
-      { kind: 'static',  sourceIdx: 3, photoSlot: 2 },                     // 4. Why PartySlate
-      { kind: 'static',  sourceIdx: 4 },                                   // 5. Stats
-      { kind: 'dynamic', bytes: dashboardPdf, bg: WHITE },                 // 6. Inquiry Dashboard
-      { kind: 'dynamic', bytes: marketsPdf,   bg: WHITE },                 // 7. Market Trends
-    ]
-    if (comparisonPdf) {
-      descriptors.push({ kind: 'dynamic', bytes: comparisonPdf, bg: WHITE }) // 8. Current vs Proposed (optional)
-    }
-    descriptors.push(
-      { kind: 'static',  sourceIdx: 7 },                                   // CS Support
-      { kind: 'static',  sourceIdx: 8 },                                   // Integrations
-      { kind: 'dynamic', bytes: pricingPdf,   bg: WHITE },                 // Investment Summary (pricing)
-      { kind: 'static',  sourceIdx: 10, photoSlot: 3 },                    // Marketing Activities
-      { kind: 'static',  sourceIdx: 11 },                                  // Trusted Brands
-      { kind: 'static',  sourceIdx: 12 },                                  // Closer (PARTYSLATE)
+    const slideIds = Object.keys(prep.htmls)
+    const renderedPdfs = await Promise.all(
+      slideIds.map(id => renderSlideToPdf(browser, prep.htmls[id])),
     )
+    const pdfs = Object.fromEntries(slideIds.map((id, i) => [id, renderedPdfs[i]]))
 
+    const descriptors = prep.buildDescriptors(pdfs)
+    const baseDoc = await PDFDocument.load(getTemplateBytes(prep.pdfFile))
     const out = await PDFDocument.create()
 
     for (const desc of descriptors) {
@@ -341,8 +391,8 @@ export default async function handler(req, res) {
       }
     }
 
-    // ----- Overlay uploaded photos -----
-    const photoArr = Array.isArray(photos) ? photos : []
+    // Overlay uploaded photos
+    const photoArr = Array.isArray(body.photos) ? body.photos : []
     for (const desc of descriptors) {
       if (desc.photoSlot == null) continue
       const dataUrl = photoArr[desc.photoSlot]
@@ -360,25 +410,24 @@ export default async function handler(req, res) {
         console.warn(`photo slot ${desc.photoSlot} embed failed:`, e.message)
         continue
       }
-      const target = PHOTO_TARGET
+      const t = PHOTO_TARGET
       const imgRatio = img.width / img.height
-      const targetRatio = target.w / target.h
+      const targetRatio = t.w / t.h
       let drawW, drawH
       if (imgRatio > targetRatio) {
-        drawW = target.w
-        drawH = target.w / imgRatio
+        drawW = t.w
+        drawH = t.w / imgRatio
       } else {
-        drawH = target.h
-        drawW = target.h * imgRatio
+        drawH = t.h
+        drawW = t.h * imgRatio
       }
-      const drawX = target.x + (target.w - drawW) / 2
-      const drawY = target.y + (target.h - drawH) / 2
+      const drawX = t.x + (t.w - drawW) / 2
+      const drawY = t.y + (t.h - drawH) / 2
       desc.page.drawImage(img, { x: drawX, y: drawY, width: drawW, height: drawH })
     }
 
     const finalBytes = await out.save()
-    const filename = `${safeFilename(companyName)}_PartySlate_Proposal.pdf`
-
+    const filename = `${safeFilename(body.companyName)}_PartySlate_Proposal.pdf`
     res.setHeader('Content-Type', 'application/pdf')
     res.setHeader('Content-Disposition', `attachment; filename="${filename}"`)
     res.end(Buffer.from(finalBytes))

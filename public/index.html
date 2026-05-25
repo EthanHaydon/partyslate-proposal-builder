@@ -159,6 +159,27 @@
     display: block;
   }
 
+  .radio-row {
+    display: flex;
+    gap: 24px;
+    font-size: 14px;
+    margin-top: 6px;
+    flex-wrap: wrap;
+  }
+  .radio-row label {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    user-select: none;
+  }
+  .radio-row input[type="radio"] {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--gold);
+    margin: 0;
+  }
+
   .prices {
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
@@ -401,6 +422,7 @@
       <label for="template">Template</label>
       <select id="template" name="template" required>
         <option value="executive-group-deal">Executive Group Deal</option>
+        <option value="partyslate-proposal-sales">PartySlate Proposal Sales</option>
       </select>
     </div>
 
@@ -450,6 +472,7 @@
       </div>
     </div>
 
+    <div data-template="executive-group-deal">
     <h2 class="section-heading">Lets review Performance</h2>
 
     <div class="field">
@@ -472,6 +495,21 @@
       </details>
     </div>
 
+    </div>
+
+    <div data-template="partyslate-proposal-sales">
+    <h2 class="section-heading">Lets review Performance</h2>
+
+    <div class="field">
+      <label for="standardMetro">Metro Area</label>
+      <select id="standardMetro" name="standardMetro">
+        <option value="">— select a metro —</option>
+      </select>
+      <div class="hint">Drives the donut chart and traffic pill on slide 6. Pulled from PartySlate baseline data.</div>
+    </div>
+    </div>
+
+    <div data-template="executive-group-deal">
     <h2 class="section-heading">Current vs Proposed</h2>
     <div class="hint" style="margin-bottom: 14px;">Optional. Adds a side-by-side comparison slide between Market Trends and Customer Success.</div>
 
@@ -539,21 +577,24 @@
       </div>
     </div>
 
+    </div>
+
+    <div data-template="executive-group-deal">
     <h2 class="section-heading">Investment Summary</h2>
     <div class="hint" style="margin-bottom: 14px;">Populates slide 10. Pricing fields drive the graphic on the right; the rest fills the left column.</div>
 
     <div class="prices">
       <div class="field price-field">
         <label for="listPrice">List Price</label>
-        <input type="number" id="listPrice" name="listPrice" min="0" step="1" placeholder="0" required>
+        <input type="number" id="listPrice" name="listPrice" min="0" step="1" placeholder="0">
       </div>
       <div class="field price-field">
         <label for="discountedPrice">Discounted</label>
-        <input type="number" id="discountedPrice" name="discountedPrice" min="0" step="1" placeholder="0" required>
+        <input type="number" id="discountedPrice" name="discountedPrice" min="0" step="1" placeholder="0">
       </div>
       <div class="field price-field">
         <label for="finalPrice">Final (Upfront)</label>
-        <input type="number" id="finalPrice" name="finalPrice" min="0" step="1" placeholder="0" required>
+        <input type="number" id="finalPrice" name="finalPrice" min="0" step="1" placeholder="0">
       </div>
     </div>
 
@@ -588,6 +629,47 @@
       </select>
     </div>
 
+    </div>
+
+    <div data-template="partyslate-proposal-sales">
+    <h2 class="section-heading">Investment Summary</h2>
+    <div class="hint" style="margin-bottom: 14px;">Populates slide 9. Math: List = monthly × 12, Discounted = List × (1 − discount%), Final = Discounted − (10% upfront, if checked).</div>
+
+    <div class="field">
+      <label>Metro Class</label>
+      <div class="radio-row">
+        <label><input type="radio" name="metroClass" value="standard" checked> Standard Metros</label>
+        <label><input type="radio" name="metroClass" value="major"> Major Metros</label>
+      </div>
+    </div>
+
+    <div class="prices" style="grid-template-columns: 1fr 1fr;">
+      <div class="field">
+        <label for="subscriptionTier">Subscription Tier</label>
+        <select id="subscriptionTier" name="subscriptionTier">
+          <option value="Portfolio">Portfolio</option>
+          <option value="Premier" selected>Premier</option>
+          <option value="Platinum">Platinum</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="discountTier">Discount Tier</label>
+        <select id="discountTier" name="discountTier">
+          <option value="10">10% off</option>
+          <option value="20" selected>20% off</option>
+          <option value="30">30% off</option>
+          <option value="40">40% off</option>
+          <option value="50">50% off</option>
+        </select>
+      </div>
+    </div>
+
+    <label class="toggle-row">
+      <input type="checkbox" id="upfront10">
+      <span>Apply 10% annual upfront payment discount</span>
+    </label>
+    </div>
+
     <div class="actions">
       <button class="btn" id="buildBtn" type="submit" disabled>Build Proposal PDF</button>
       <span class="status" id="status"></span>
@@ -617,6 +699,40 @@ function setStatus(text, kind = '') {
   statusEl.className = 'status' + (kind ? ' ' + kind : '')
   statusEl.textContent = text
 }
+
+// ----- Template switching: show/hide sections + re-validate -----
+function currentTemplate() { return $('template').value }
+
+function applyTemplateVisibility() {
+  const t = currentTemplate()
+  document.querySelectorAll('[data-template]').forEach(el => {
+    el.style.display = el.dataset.template === t ? '' : 'none'
+  })
+  refreshButton()
+}
+$('template').addEventListener('change', applyTemplateVisibility)
+
+// Populate the metro dropdown from markets.json
+;(async () => {
+  try {
+    const r = await fetch('/markets.json')
+    if (!r.ok) throw new Error('markets.json fetch failed')
+    const data = await r.json()
+    const sel = $('standardMetro')
+    if (!sel) return
+    ;[...data.markets]
+      .sort((a, b) => a.metro.localeCompare(b.metro))
+      .forEach(m => {
+        const opt = document.createElement('option')
+        opt.value = m.metro
+        opt.textContent = `${m.metro} · ${m.traffic_level}`
+        sel.appendChild(opt)
+      })
+  } catch (e) {
+    console.warn('Failed to load markets:', e)
+  }
+})()
+$('standardMetro').addEventListener('change', refreshButton)
 
 // ----- Photo slots: click/drop → resize → base64 -----
 const PHOTO_MAX_DIM = 1280
@@ -702,11 +818,16 @@ function resizeImage(file, maxDim, quality) {
 }
 
 function refreshButton() {
-  const ok = csvText &&
-    companyInput.value.trim() &&
-    listInput.value !== '' &&
-    discInput.value !== '' &&
-    finalInput.value !== ''
+  const t = currentTemplate()
+  let ok = !!companyInput.value.trim()
+  if (t === 'executive-group-deal') {
+    ok = ok && !!csvText
+      && listInput.value !== ''
+      && discInput.value !== ''
+      && finalInput.value !== ''
+  } else if (t === 'partyslate-proposal-sales') {
+    ok = ok && !!$('standardMetro').value
+  }
   buildBtn.disabled = !ok
 }
 
@@ -791,6 +912,44 @@ async function loadXlsx(file) {
   }
 }
 
+function buildRequestBody() {
+  const t = currentTemplate()
+  const body = {
+    template: t,
+    companyName: companyInput.value.trim(),
+    photos,
+  }
+  if (t === 'executive-group-deal') {
+    body.csv = csvText
+    body.listPrice = Number(listInput.value)
+    body.discountedPrice = Number(discInput.value)
+    body.finalPrice = Number(finalInput.value)
+    body.investmentSummary = {
+      profiles: $('profilesText').value.trim(),
+      includes: [...document.querySelectorAll('#includesGroup input:checked')].map(el => el.value),
+      discounting: $('discountingText').value.trim(),
+      billing: $('billingSelect').value,
+    }
+    body.comparison = {
+      include: compareToggle.checked,
+      xlsxBase64,
+      title: $('compareTitle').value.trim(),
+      subtitle: $('compareSubtitle').value.trim(),
+      todaySubtitle: $('compareTodaySubtitle').value.trim(),
+      proposedSubtitle: $('compareProposedSubtitle').value.trim(),
+      todayBullets: $('compareTodayBullets').value.split('\n').map(s => s.trim()).filter(Boolean),
+      proposedBullets: $('compareProposedBullets').value.split('\n').map(s => s.trim()).filter(Boolean),
+    }
+  } else if (t === 'partyslate-proposal-sales') {
+    body.metro = $('standardMetro').value
+    body.metroClass = (document.querySelector('input[name="metroClass"]:checked') || {}).value || 'standard'
+    body.subscriptionTier = $('subscriptionTier').value
+    body.discountTier = Number($('discountTier').value)
+    body.upfront10 = $('upfront10').checked
+  }
+  return body
+}
+
 form.addEventListener('submit', async (e) => {
   e.preventDefault()
   if (!csvText) {
@@ -806,33 +965,7 @@ form.addEventListener('submit', async (e) => {
     const r = await fetch('/api/build-proposal', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        template: $('template').value,
-        companyName: companyInput.value.trim(),
-        csv: csvText,
-        listPrice: Number(listInput.value),
-        discountedPrice: Number(discInput.value),
-        finalPrice: Number(finalInput.value),
-        investmentSummary: {
-          profiles: $('profilesText').value.trim(),
-          includes: [...document.querySelectorAll('#includesGroup input:checked')].map(el => el.value),
-          discounting: $('discountingText').value.trim(),
-          billing: $('billingSelect').value,
-        },
-        comparison: {
-          include: compareToggle.checked,
-          xlsxBase64,
-          title: $('compareTitle').value.trim(),
-          subtitle: $('compareSubtitle').value.trim(),
-          todaySubtitle: $('compareTodaySubtitle').value.trim(),
-          proposedSubtitle: $('compareProposedSubtitle').value.trim(),
-          todayBullets: $('compareTodayBullets').value
-            .split('\n').map(s => s.trim()).filter(Boolean),
-          proposedBullets: $('compareProposedBullets').value
-            .split('\n').map(s => s.trim()).filter(Boolean),
-        },
-        photos,
-      }),
+      body: JSON.stringify(buildRequestBody()),
     })
     if (!r.ok) {
       const err = await r.json().catch(() => ({}))
@@ -856,6 +989,9 @@ form.addEventListener('submit', async (e) => {
     refreshButton()
   }
 })
+
+// Initial pass: hide sections that don't match the default template selection.
+applyTemplateVisibility()
 </script>
 </body>
 </html>
