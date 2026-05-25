@@ -115,9 +115,48 @@
     cursor: pointer;
   }
   .field input:focus,
-  .field select:focus {
+  .field select:focus,
+  .field textarea:focus {
     border-color: var(--gold);
     box-shadow: inset 0 -1px 0 var(--gold);
+  }
+  .field textarea {
+    font-family: var(--sans);
+    font-size: 14px;
+    font-weight: 300;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    padding: 10px 14px;
+    color: var(--fg);
+    outline: none;
+    width: 100%;
+    resize: vertical;
+    min-height: 100px;
+    line-height: 1.5;
+    transition: border-color 0.12s ease;
+  }
+
+  .toggle-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 18px;
+    font-size: 14px;
+    cursor: pointer;
+    user-select: none;
+  }
+  .toggle-row input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--gold);
+    cursor: pointer;
+    margin: 0;
+  }
+  .comparison-fields {
+    display: none;
+  }
+  .comparison-fields.active {
+    display: block;
   }
 
   .prices {
@@ -433,6 +472,60 @@
       </details>
     </div>
 
+    <h2 class="section-heading">Current vs Proposed</h2>
+    <div class="hint" style="margin-bottom: 14px;">Optional. Adds a side-by-side comparison slide between Market Trends and Customer Success.</div>
+
+    <label class="toggle-row">
+      <input type="checkbox" id="compareInclude">
+      <span>Include this slide</span>
+    </label>
+
+    <div class="comparison-fields" id="comparisonFields">
+      <div class="field">
+        <label>Current vs Proposed XLSX</label>
+        <div class="dropzone" id="dzCompare" tabindex="0" role="button" aria-label="Drop XLSX here or click to choose">
+          <div class="dz-primary">Drop XLSX here</div>
+          <div class="dz-secondary">or click to choose · two tabs: "Current" and "Proposed"</div>
+          <div class="dz-filename" id="filenameCompare"></div>
+        </div>
+        <input type="file" id="fileCompare" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet">
+      </div>
+
+      <div class="field">
+        <label for="compareTitle">Slide title</label>
+        <input type="text" id="compareTitle" placeholder="{Company} partnership — today vs. proposed">
+      </div>
+
+      <div class="field">
+        <label for="compareSubtitle">Slide subtitle</label>
+        <input type="text" id="compareSubtitle" placeholder="e.g. A single enterprise agreement across all branded catering + exclusive venues">
+      </div>
+
+      <div class="prices" style="grid-template-columns: 1fr 1fr;">
+        <div class="field">
+          <label for="compareTodaySubtitle">Today subtitle</label>
+          <input type="text" id="compareTodaySubtitle" placeholder="Multiple contracts and renewal dates">
+        </div>
+        <div class="field">
+          <label for="compareProposedSubtitle">Proposed subtitle</label>
+          <input type="text" id="compareProposedSubtitle" placeholder="Single enterprise contract, single renewal">
+        </div>
+      </div>
+
+      <div class="prices" style="grid-template-columns: 1fr 1fr;">
+        <div class="field">
+          <label for="compareTodayBullets">Today bullets</label>
+          <div class="hint">One per line</div>
+          <textarea id="compareTodayBullets" rows="5" placeholder="Mixed tiers — 9 Premier, 2 Platinum, 2 Portfolio&#10;Multiple renewal dates spread across Mar 2026 – Apr 2027&#10;Inquiries delivered via form email — no HubSpot link"></textarea>
+        </div>
+        <div class="field">
+          <label for="compareProposedBullets">Proposed bullets</label>
+          <div class="hint">One per line</div>
+          <textarea id="compareProposedBullets" rows="5" placeholder="All 25 properties on Platinum — highest exposure tier&#10;20 exclusive venues + 5 catering brands under one agreement&#10;One renewal date of WPC's choosing, aligned to budget season&#10;HubSpot integration delivers inquiries direct to your CRM"></textarea>
+        </div>
+      </div>
+    </div>
+
     <h2 class="section-heading">Investment Summary</h2>
     <div class="hint" style="margin-bottom: 14px;">Populates slide 10. Pricing fields drive the graphic on the right; the rest fills the left column.</div>
 
@@ -637,6 +730,54 @@ async function loadFile(file) {
   refreshButton()
 }
 
+// ----- Current vs Proposed: toggle + xlsx upload -----
+const compareToggle = $('compareInclude')
+const compareFields = $('comparisonFields')
+const dzCompare = $('dzCompare')
+const fileCompareInput = $('fileCompare')
+const filenameCompareEl = $('filenameCompare')
+let xlsxBase64 = null
+
+compareToggle.addEventListener('change', () => {
+  compareFields.classList.toggle('active', compareToggle.checked)
+})
+
+dzCompare.addEventListener('click', () => fileCompareInput.click())
+dzCompare.addEventListener('keydown', e => {
+  if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fileCompareInput.click() }
+})
+;['dragenter', 'dragover'].forEach(ev =>
+  dzCompare.addEventListener(ev, e => { e.preventDefault(); dzCompare.classList.add('drag') }))
+;['dragleave', 'drop'].forEach(ev =>
+  dzCompare.addEventListener(ev, e => { e.preventDefault(); dzCompare.classList.remove('drag') }))
+dzCompare.addEventListener('drop', e => {
+  const f = e.dataTransfer.files[0]
+  if (f) loadXlsx(f)
+})
+fileCompareInput.addEventListener('change', e => {
+  const f = e.target.files[0]
+  if (f) loadXlsx(f)
+})
+
+async function loadXlsx(file) {
+  filenameCompareEl.textContent = '› ' + file.name
+  setStatus('Reading XLSX…')
+  try {
+    const dataUrl = await new Promise((resolve, reject) => {
+      const reader = new FileReader()
+      reader.onload = () => resolve(reader.result)
+      reader.onerror = () => reject(new Error('cannot read file'))
+      reader.readAsDataURL(file)
+    })
+    const comma = dataUrl.indexOf(',')
+    xlsxBase64 = comma >= 0 ? dataUrl.slice(comma + 1) : null
+    setStatus(`XLSX loaded · ${file.name}`, 'ok')
+  } catch (e) {
+    xlsxBase64 = null
+    setStatus('Failed to read XLSX: ' + e.message, 'err')
+  }
+}
+
 form.addEventListener('submit', async (e) => {
   e.preventDefault()
   if (!csvText) {
@@ -664,6 +805,18 @@ form.addEventListener('submit', async (e) => {
           includes: [...document.querySelectorAll('#includesGroup input:checked')].map(el => el.value),
           discounting: $('discountingText').value.trim(),
           billing: $('billingSelect').value,
+        },
+        comparison: {
+          include: compareToggle.checked,
+          xlsxBase64,
+          title: $('compareTitle').value.trim(),
+          subtitle: $('compareSubtitle').value.trim(),
+          todaySubtitle: $('compareTodaySubtitle').value.trim(),
+          proposedSubtitle: $('compareProposedSubtitle').value.trim(),
+          todayBullets: $('compareTodayBullets').value
+            .split('\n').map(s => s.trim()).filter(Boolean),
+          proposedBullets: $('compareProposedBullets').value
+            .split('\n').map(s => s.trim()).filter(Boolean),
         },
         photos,
       }),

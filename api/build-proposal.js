@@ -2,11 +2,13 @@ import { readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { dirname, join } from 'node:path'
 import { PDFDocument, rgb } from 'pdf-lib'
+import * as xlsxLib from 'xlsx'
 import { parseCsv, computeAggregates } from '../lib/parse.js'
 import { renderHtml as renderDashboardHtml } from '../lib/template.js'
 import { renderMarketsHtml } from '../lib/market-template.js'
 import { renderCoverHtml } from '../lib/cover-template.js'
 import { renderPricingHtml } from '../lib/pricing-template.js'
+import { renderComparisonHtml } from '../lib/comparison-template.js'
 
 // Vercel's Fluid Compute doesn't always set AWS_EXECUTION_ENV in the form
 // @sparticuz/chromium expects. Force-set AWS_LAMBDA_JS_RUNTIME so its Lambda
@@ -20,21 +22,10 @@ const MARKETS_PATH = join(__dirname, '..', 'public', 'markets.json')
 const SLIDE_W = 1280
 const SLIDE_H = 720
 
-// Which 1-indexed pages in the base template get replaced by which dynamic slide.
-const DYNAMIC_PAGES = { cover: 1, dashboard: 6, markets: 7, pricing: 10 }
-
-// Where on the static pages (10in × 6.25in → 720×450 pt, origin bottom-left)
-// each uploaded photo gets drawn. The right-column gray placeholder on slides
-// 2/3/4 fills approximately x:367..720, y:0..450; the target box is inset
-// 30pt top/bottom so the photo sits centered with breathing room above/below.
-const PHOTO_TARGETS = {
-  2:  { x: 367, y: 55, w: 353, h: 340 },
-  3:  { x: 367, y: 55, w: 353, h: 340 },
-  4:  { x: 367, y: 55, w: 353, h: 340 },
-  11: { x: 367, y: 55, w: 353, h: 340 },
-}
-// Photos[0..3] map to slides 2, 3, 4, 11 in that order.
-const PHOTO_SLOTS = [2, 3, 4, 11]
+// All photo placements share the same box: the right-column gray placeholder
+// area on slides 2, 3, 4, 11. Coords are PDF points on a 720×450 page
+// (10 × 6.25 in), origin bottom-left, with 55pt top/bottom inset.
+const PHOTO_TARGET = { x: 367, y: 55, w: 353, h: 340 }
 
 let browserPromise
 let TEMPLATE_BYTES_CACHE = null
@@ -109,6 +100,49 @@ function safeFilename(s) {
   return (s || 'Proposal').trim().replace(/[^A-Za-z0-9]+/g, '_').replace(/^_+|_+$/g, '') || 'Proposal'
 }
 
+// Compute "today/proposed" card stats from one tab of the uploaded xlsx.
+// Sheet shape (from the template): rows of { Company Name, Company type,
+// Membership Level, Contract End Date, Group Tcv, ... }.
+function statsFromSheet(rows) {
+  const accounts = rows.filter(r => (r['Company Name'] || '').trim().length > 0)
+  let annualSpend = 0
+  let wpcPaid = 0
+  let clientPaid = 0
+  for (const r of accounts) {
+    const tcv = r['Group Tcv']
+    if (typeof tcv === 'number' && Number.isFinite(tcv)) {
+      annualSpend += tcv
+      wpcPaid += 1
+    } else if (typeof tcv === 'string') {
+      if (/paid by facility/i.test(tcv)) clientPaid += 1
+      else wpcPaid += 1
+    } else {
+      // empty/blank Group Tcv = WPC-paid but amount tbd
+      wpcPaid += 1
+    }
+  }
+  return {
+    accountCount: accounts.length,
+    annualSpend,
+    wpcPaid,
+    clientPaid,
+  }
+}
+
+function parseComparisonXlsx(base64) {
+  const buf = Buffer.from(base64, 'base64')
+  const wb = xlsxLib.read(buf, { type: 'buffer' })
+  // Tolerant lookup — accept "Current"/"current"/"Today" etc.
+  const findSheet = (re) => {
+    const name = wb.SheetNames.find(n => re.test(n))
+    return name ? xlsxLib.utils.sheet_to_json(wb.Sheets[name], { defval: '' }) : []
+  }
+  return {
+    current: findSheet(/^current$|^today$/i),
+    proposed: findSheet(/^proposed$|^proposal$/i),
+  }
+}
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     res.status(405).json({ error: 'method not allowed' })
@@ -124,6 +158,7 @@ export default async function handler(req, res) {
       discountedPrice,
       finalPrice,
       investmentSummary,
+      comparison,
       photos,
     } = req.body || {}
 
@@ -168,7 +203,52 @@ export default async function handler(req, res) {
         (b.traffic_actual - a.traffic_actual),
       )
 
-    // ----- Render the 4 dynamic slides -----
+    // ----- Maybe compute Current vs Proposed stats from uploaded xlsx -----
+    const cmp = comparison || {}
+    const includeComparison = !!(cmp.include && cmp.xlsxBase64)
+    let comparisonHtml = null
+    if (includeComparison) {
+      try {
+        const { current, proposed } = parseComparisonXlsx(cmp.xlsxBase64)
+        const todayStats = statsFromSheet(current)
+        const proposedSheetStats = statsFromSheet(proposed)
+        // Proposed annual spend uses the Discounted Price the user entered
+        // (per 1a in the spec). The xlsx-derived spend is the un-discounted
+        // sum and isn't surfaced; account count + properties-added come from
+        // the proposed tab.
+        const proposedAnnualSpend = disc
+        const propertiesAdded = Math.max(
+          proposedSheetStats.accountCount - todayStats.accountCount,
+          0,
+        )
+        const deltaSpend = proposedAnnualSpend - todayStats.annualSpend
+        comparisonHtml = renderComparisonHtml({
+          title: (cmp.title || '').trim() || `${companyName.trim()} partnership — today vs. proposed`,
+          subtitle: (cmp.subtitle || '').trim(),
+          today: {
+            subtitle: (cmp.todaySubtitle || '').trim() || 'Multiple contracts and renewal dates',
+            annualSpend: todayStats.annualSpend,
+            accountCount: todayStats.accountCount,
+            wpcPaid: todayStats.wpcPaid,
+            clientPaid: todayStats.clientPaid,
+            bullets: Array.isArray(cmp.todayBullets) ? cmp.todayBullets : [],
+          },
+          proposed: {
+            subtitle: (cmp.proposedSubtitle || '').trim() || 'Single enterprise contract, single renewal',
+            annualSpend: proposedAnnualSpend,
+            propertiesAdded,
+            deltaSpend,
+            bullets: Array.isArray(cmp.proposedBullets) ? cmp.proposedBullets : [],
+          },
+        })
+      } catch (e) {
+        console.error('comparison xlsx parse failed:', e)
+        res.status(400).json({ error: 'could not parse Current vs Proposed xlsx: ' + e.message })
+        return
+      }
+    }
+
+    // ----- Render dynamic slides -----
     const { month, year } = currentMonthYear()
     const monthYearLabel = `${month} ${year}`
 
@@ -192,90 +272,108 @@ export default async function handler(req, res) {
     })
 
     const browser = await getBrowser()
-    // Render 4 slides concurrently. Each opens its own page on the shared browser.
-    const [coverPdf, dashboardPdf, marketsPdf, pricingPdf] = await Promise.all([
+    // Render slides concurrently. Each opens its own page on the shared browser.
+    const renderJobs = [
       renderSlideToPdf(browser, coverHtml),
       renderSlideToPdf(browser, dashboardHtml),
       renderSlideToPdf(browser, marketsHtml),
       renderSlideToPdf(browser, pricingHtml),
-    ])
+    ]
+    if (comparisonHtml) renderJobs.push(renderSlideToPdf(browser, comparisonHtml))
+    const renderedPdfs = await Promise.all(renderJobs)
+    const [coverPdf, dashboardPdf, marketsPdf, pricingPdf, comparisonPdf] = renderedPdfs
 
     // ----- Assemble final PDF -----
     // The Google Slides template uses 10 × 6.25 in pages (720 × 450 pt).
     // Dynamic slides are rendered at 13.333 × 7.5 in (16:9) so the existing
-    // inquiry-dashboard layouts work unchanged. Here we embed each dynamic
-    // PDF as a form XObject and draw it scale-to-fit-width on a 10 × 6.25
-    // page — small letterbox bars top/bottom are hidden by per-slide bg fill.
+    // inquiry-dashboard layouts work unchanged. Embed each dynamic PDF as a
+    // form XObject and draw it scale-to-fit-width on a 10 × 6.25 page —
+    // small letterbox bars top/bottom are hidden by per-slide bg fill.
     const baseDoc = await PDFDocument.load(getTemplateBytes())
-    const baseCount = baseDoc.getPageCount()
     const TARGET_W = 720
     const TARGET_H = 450
 
-    const out = await PDFDocument.create()
-
-    // bg color per dynamic slide so letterbox bars match the slide bg.
     const WHITE = rgb(1, 1, 1)
     const BLACK = rgb(0, 0, 0)
-    const dynamics = {
-      [DYNAMIC_PAGES.cover]:     { bytes: coverPdf,     bg: BLACK },
-      [DYNAMIC_PAGES.dashboard]: { bytes: dashboardPdf, bg: WHITE },
-      [DYNAMIC_PAGES.markets]:   { bytes: marketsPdf,   bg: WHITE },
-      [DYNAMIC_PAGES.pricing]:   { bytes: pricingPdf,   bg: WHITE },
-    }
 
-    for (let i = 1; i <= baseCount; i++) {
-      const dyn = dynamics[i]
-      if (dyn) {
-        const [embedded] = await out.embedPdf(dyn.bytes, [0])
+    // Page descriptors — one entry per OUTPUT page, in order.
+    //   kind  'dynamic' = render a freshly-built PDF page
+    //         'static'  = copy page sourceIdx (0-indexed) from baseDoc
+    //   photoSlot 0..3 = which uploaded photo (if any) to overlay on this page
+    const descriptors = [
+      { kind: 'dynamic', bytes: coverPdf,     bg: BLACK },                 // 1. Cover
+      { kind: 'static',  sourceIdx: 1, photoSlot: 0 },                     // 2. Quick Snapshot
+      { kind: 'static',  sourceIdx: 2, photoSlot: 1 },                     // 3. Goals
+      { kind: 'static',  sourceIdx: 3, photoSlot: 2 },                     // 4. Why PartySlate
+      { kind: 'static',  sourceIdx: 4 },                                   // 5. Stats
+      { kind: 'dynamic', bytes: dashboardPdf, bg: WHITE },                 // 6. Inquiry Dashboard
+      { kind: 'dynamic', bytes: marketsPdf,   bg: WHITE },                 // 7. Market Trends
+    ]
+    if (comparisonPdf) {
+      descriptors.push({ kind: 'dynamic', bytes: comparisonPdf, bg: WHITE }) // 8. Current vs Proposed (optional)
+    }
+    descriptors.push(
+      { kind: 'static',  sourceIdx: 7 },                                   // CS Support
+      { kind: 'static',  sourceIdx: 8 },                                   // Integrations
+      { kind: 'dynamic', bytes: pricingPdf,   bg: WHITE },                 // Investment Summary (pricing)
+      { kind: 'static',  sourceIdx: 10, photoSlot: 3 },                    // Marketing Activities
+      { kind: 'static',  sourceIdx: 11 },                                  // Trusted Brands
+      { kind: 'static',  sourceIdx: 12 },                                  // Closer (PARTYSLATE)
+    )
+
+    const out = await PDFDocument.create()
+
+    for (const desc of descriptors) {
+      if (desc.kind === 'dynamic') {
+        const [embedded] = await out.embedPdf(desc.bytes, [0])
         const scale = TARGET_W / embedded.width
         const drawW = embedded.width * scale
         const drawH = embedded.height * scale
         const offsetY = (TARGET_H - drawH) / 2
         const page = out.addPage([TARGET_W, TARGET_H])
-        page.drawRectangle({ x: 0, y: 0, width: TARGET_W, height: TARGET_H, color: dyn.bg })
+        page.drawRectangle({ x: 0, y: 0, width: TARGET_W, height: TARGET_H, color: desc.bg })
         page.drawPage(embedded, { x: 0, y: offsetY, width: drawW, height: drawH })
+        desc.page = page
       } else {
-        const [page] = await out.copyPages(baseDoc, [i - 1])
+        const [page] = await out.copyPages(baseDoc, [desc.sourceIdx])
         out.addPage(page)
+        desc.page = page
       }
     }
 
-    // ----- Overlay uploaded photos on slides 2/3/4/11 -----
-    if (Array.isArray(photos)) {
-      for (let slotIdx = 0; slotIdx < PHOTO_SLOTS.length; slotIdx++) {
-        const dataUrl = photos[slotIdx]
-        if (!dataUrl || typeof dataUrl !== 'string') continue
-        const slide = PHOTO_SLOTS[slotIdx]
-        const target = PHOTO_TARGETS[slide]
-        const comma = dataUrl.indexOf(',')
-        if (comma < 0) continue
-        const meta = dataUrl.slice(0, comma)
-        const b64 = dataUrl.slice(comma + 1)
-        const bytes = Buffer.from(b64, 'base64')
-        const isJpg = /jpe?g/i.test(meta)
-        let img
-        try {
-          img = isJpg ? await out.embedJpg(bytes) : await out.embedPng(bytes)
-        } catch (e) {
-          console.warn(`photo slot ${slotIdx} (slide ${slide}) embed failed:`, e.message)
-          continue
-        }
-        // Fit-to-contain inside target box. Centered. Gray placeholder fills any gap.
-        const imgRatio = img.width / img.height
-        const targetRatio = target.w / target.h
-        let drawW, drawH
-        if (imgRatio > targetRatio) {
-          drawW = target.w
-          drawH = target.w / imgRatio
-        } else {
-          drawH = target.h
-          drawW = target.h * imgRatio
-        }
-        const drawX = target.x + (target.w - drawW) / 2
-        const drawY = target.y + (target.h - drawH) / 2
-        const page = out.getPage(slide - 1)
-        page.drawImage(img, { x: drawX, y: drawY, width: drawW, height: drawH })
+    // ----- Overlay uploaded photos -----
+    const photoArr = Array.isArray(photos) ? photos : []
+    for (const desc of descriptors) {
+      if (desc.photoSlot == null) continue
+      const dataUrl = photoArr[desc.photoSlot]
+      if (!dataUrl || typeof dataUrl !== 'string') continue
+      const comma = dataUrl.indexOf(',')
+      if (comma < 0) continue
+      const meta = dataUrl.slice(0, comma)
+      const b64 = dataUrl.slice(comma + 1)
+      const bytes = Buffer.from(b64, 'base64')
+      const isJpg = /jpe?g/i.test(meta)
+      let img
+      try {
+        img = isJpg ? await out.embedJpg(bytes) : await out.embedPng(bytes)
+      } catch (e) {
+        console.warn(`photo slot ${desc.photoSlot} embed failed:`, e.message)
+        continue
       }
+      const target = PHOTO_TARGET
+      const imgRatio = img.width / img.height
+      const targetRatio = target.w / target.h
+      let drawW, drawH
+      if (imgRatio > targetRatio) {
+        drawW = target.w
+        drawH = target.w / imgRatio
+      } else {
+        drawH = target.h
+        drawW = target.h * imgRatio
+      }
+      const drawX = target.x + (target.w - drawW) / 2
+      const drawY = target.y + (target.h - drawH) / 2
+      desc.page.drawImage(img, { x: drawX, y: drawY, width: drawW, height: drawH })
     }
 
     const finalBytes = await out.save()
@@ -291,5 +389,5 @@ export default async function handler(req, res) {
 }
 
 export const config = {
-  api: { bodyParser: { sizeLimit: '10mb' } },
+  api: { bodyParser: { sizeLimit: '15mb' } },
 }

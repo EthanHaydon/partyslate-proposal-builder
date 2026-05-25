@@ -13,7 +13,8 @@
     "@sparticuz/chromium": "^131.0.0",
     "csv-parse": "^5.5.6",
     "pdf-lib": "^1.17.1",
-    "puppeteer-core": "^23.11.1"
+    "puppeteer-core": "^23.11.1",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "vercel": "^54.1.0"
