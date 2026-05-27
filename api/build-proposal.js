@@ -288,11 +288,12 @@ function preparePartySlateProposalSales(body, errors) {
         { kind: 'dynamic', bytes: pdfs.marketPie,    bg: WHITE },             // 6
         { kind: 'static',  sourceIdx: 6 },                                    // 7
         { kind: 'static',  sourceIdx: 7 },                                    // 8
-        { kind: 'dynamic', bytes: pdfs.pricingTiers, bg: WHITE },             // 9
-        // Static pricing reference: source page 9 = Standard tier card grid
-        // (sourceIdx 8); source page 10 = Major tier card grid (sourceIdx 9).
-        // Keep only the one matching the chosen metro class.
-        { kind: 'static',  sourceIdx: cls === 'major' ? 9 : 8 },              // 10 matching reference
+        // Static pricing reference first (the visual tier grid), then the
+        // dynamic Investment Summary. Source page 9 = Standard tier grid
+        // (sourceIdx 8); page 10 = Major tier grid (sourceIdx 9). Keep only
+        // the grid matching the chosen metro class.
+        { kind: 'static',  sourceIdx: cls === 'major' ? 9 : 8 },              // 9 matching reference
+        { kind: 'dynamic', bytes: pdfs.pricingTiers, bg: WHITE },             // 10 Investment Summary
         // Skip sourceIdx 10 — that's the static Investment Summary example
         // placeholder ($14,340 / 80% / Premier) baked into the source deck.
         // Our dynamic pricing tiers slide above is the real Investment Summary.
