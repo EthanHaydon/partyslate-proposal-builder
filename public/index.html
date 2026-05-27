@@ -653,15 +653,8 @@
         </select>
       </div>
       <div class="field">
-        <label for="discountTier">Discount Tier</label>
-        <select id="discountTier" name="discountTier">
-          <option value="0">No discount</option>
-          <option value="10">10% off</option>
-          <option value="20" selected>20% off</option>
-          <option value="30">30% off</option>
-          <option value="40">40% off</option>
-          <option value="50">50% off</option>
-        </select>
+        <label for="discountTier">Discount %</label>
+        <input type="number" id="discountTier" name="discountTier" min="0" max="100" step="1" value="20" placeholder="0–100">
       </div>
     </div>
 
