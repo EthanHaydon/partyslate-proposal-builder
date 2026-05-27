@@ -544,22 +544,22 @@
 
       <div class="field">
         <label for="compareTitle">Slide title</label>
-        <input type="text" id="compareTitle" placeholder="{Company} partnership — today vs. proposed">
+        <input type="text" id="compareTitle" value="[Company] partnership — today vs. proposed">
       </div>
 
       <div class="field">
         <label for="compareSubtitle">Slide subtitle</label>
-        <input type="text" id="compareSubtitle" placeholder="e.g. A single enterprise agreement across all branded catering + exclusive venues">
+        <input type="text" id="compareSubtitle" value="A single enterprise agreement across the full [Company] hotel portfolio">
       </div>
 
       <div class="prices" style="grid-template-columns: 1fr 1fr;">
         <div class="field">
           <label for="compareTodaySubtitle">Today subtitle</label>
-          <input type="text" id="compareTodaySubtitle" placeholder="Multiple contracts and renewal dates">
+          <input type="text" id="compareTodaySubtitle" value="Multiple contracts and renewal dates">
         </div>
         <div class="field">
           <label for="compareProposedSubtitle">Proposed subtitle</label>
-          <input type="text" id="compareProposedSubtitle" placeholder="Single enterprise contract, single renewal">
+          <input type="text" id="compareProposedSubtitle" value="Single enterprise contract, full portfolio activated">
         </div>
       </div>
 
@@ -924,13 +924,17 @@ function buildRequestBody() {
       discounting: $('discountingText').value.trim(),
       billing: $('billingSelect').value,
     }
+    // [Company] tokens in the slide-copy fields get substituted with the
+    // actual company name on submit so the defaults stay generic in the form.
+    const company = companyInput.value.trim() || 'Company'
+    const sub = (s) => s.replace(/\[Company\]/gi, company)
     body.comparison = {
       include: compareToggle.checked,
       xlsxBase64,
-      title: $('compareTitle').value.trim(),
-      subtitle: $('compareSubtitle').value.trim(),
-      todaySubtitle: $('compareTodaySubtitle').value.trim(),
-      proposedSubtitle: $('compareProposedSubtitle').value.trim(),
+      title: sub($('compareTitle').value.trim()),
+      subtitle: sub($('compareSubtitle').value.trim()),
+      todaySubtitle: sub($('compareTodaySubtitle').value.trim()),
+      proposedSubtitle: sub($('compareProposedSubtitle').value.trim()),
       todayBullets: $('compareTodayBullets').value.split('\n').map(s => s.trim()).filter(Boolean),
       proposedBullets: $('compareProposedBullets').value.split('\n').map(s => s.trim()).filter(Boolean),
     }
