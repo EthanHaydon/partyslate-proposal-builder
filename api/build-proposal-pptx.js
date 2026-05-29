@@ -1,18 +1,18 @@
-// PDF export endpoint. Thin handler: validate → prepare → render dynamic
-// slides to PDFs → assemble with pdf-lib → respond. All heavy lifting lives
-// in lib/ (proposal-prep, render-helpers, pdf-assemble).
+// PPTX export endpoint. Mirror of build-proposal.js but renders dynamic
+// slides to PNG (puppeteer screenshot) and assembles with pizzip on top of
+// the source .pptx so static slides keep their native editable text.
 
 import {
   getBrowser,
   getTemplateBytes,
-  renderSlideToPdf,
+  renderSlideToPng,
   safeFilename,
 } from '../lib/render-helpers.js'
 import {
   prepareExecutiveGroupDeal,
   preparePartySlateProposalSales,
 } from '../lib/proposal-prep.js'
-import { assemblePdf } from '../lib/pdf-assemble.js'
+import { assemblePptx } from '../lib/pptx-assemble.js'
 
 const TEMPLATE_IDS = ['executive-group-deal', 'partyslate-proposal-sales']
 
@@ -43,27 +43,26 @@ export default async function handler(req, res) {
       return
     }
 
-    // Render every dynamic slide concurrently on a shared browser.
     const browser = await getBrowser()
     const slideKeys = Object.keys(prep.htmls)
     const renderedList = await Promise.all(
-      slideKeys.map(k => renderSlideToPdf(browser, prep.htmls[k])),
+      slideKeys.map(k => renderSlideToPng(browser, prep.htmls[k])),
     )
-    const renderedPdfs = Object.fromEntries(slideKeys.map((k, i) => [k, renderedList[i]]))
+    const renderedPngs = Object.fromEntries(slideKeys.map((k, i) => [k, renderedList[i]]))
 
-    const finalBytes = await assemblePdf({
-      templateBytes: getTemplateBytes(prep.pdfFile),
+    const finalBytes = assemblePptx({
+      templateBytes: getTemplateBytes(prep.pptxFile),
       descriptors: prep.descriptors,
-      renderedPdfs,
+      renderedPngs,
       photos: body.photos,
     })
 
-    const filename = `${safeFilename(body.companyName)}_PartySlate_Proposal.pdf`
-    res.setHeader('Content-Type', 'application/pdf')
+    const filename = `${safeFilename(body.companyName)}_PartySlate_Proposal.pptx`
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.presentationml.presentation')
     res.setHeader('Content-Disposition', `attachment; filename="${filename}"`)
     res.end(Buffer.from(finalBytes))
   } catch (e) {
-    console.error('build-proposal error:', e)
+    console.error('build-proposal-pptx error:', e)
     res.status(500).json({ error: e.message || String(e) })
   }
 }

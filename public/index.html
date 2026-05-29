@@ -665,7 +665,8 @@
     </div>
 
     <div class="actions">
-      <button class="btn" id="buildBtn" type="submit" disabled>Build Proposal PDF</button>
+      <button class="btn" id="buildBtn" type="submit" disabled>Build PDF</button>
+      <button class="btn" id="buildPptxBtn" type="submit" disabled>Build PPTX</button>
       <span class="status" id="status"></span>
     </div>
   </form>
@@ -823,6 +824,7 @@ function refreshButton() {
     ok = ok && !!$('standardMetro').value
   }
   buildBtn.disabled = !ok
+  $('buildPptxBtn').disabled = !ok
 }
 
 ;[companyInput, listInput, discInput, finalInput].forEach(el =>
@@ -954,13 +956,20 @@ form.addEventListener('submit', async (e) => {
     setStatus('Please add a CSV first.', 'err')
     return
   }
-  buildBtn.disabled = true
-  const originalText = buildBtn.textContent
-  buildBtn.textContent = 'Building…'
-  setStatus('Rendering slides and assembling PDF — this can take ~30s.')
+  const isPptx = e.submitter && e.submitter.id === 'buildPptxBtn'
+  const endpoint = isPptx ? '/api/build-proposal-pptx' : '/api/build-proposal'
+  const fmt = isPptx ? 'PPTX' : 'PDF'
+  const ext = isPptx ? 'pptx' : 'pdf'
+
+  const allBtns = [$('buildBtn'), $('buildPptxBtn')]
+  allBtns.forEach(b => b.disabled = true)
+  const target = e.submitter
+  const originalText = target.textContent
+  target.textContent = 'Building…'
+  setStatus(`Rendering slides and assembling ${fmt} — this can take ~30s.`)
   const t0 = performance.now()
   try {
-    const r = await fetch('/api/build-proposal', {
+    const r = await fetch(endpoint, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(buildRequestBody()),
@@ -975,7 +984,7 @@ form.addEventListener('submit', async (e) => {
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    a.download = m ? m[1] : 'Proposal.pdf'
+    a.download = m ? m[1] : `Proposal.${ext}`
     document.body.appendChild(a); a.click(); a.remove()
     URL.revokeObjectURL(url)
     const dt = ((performance.now() - t0) / 1000).toFixed(1)
@@ -983,7 +992,7 @@ form.addEventListener('submit', async (e) => {
   } catch (e) {
     setStatus(e.message, 'err')
   } finally {
-    buildBtn.textContent = originalText
+    target.textContent = originalText
     refreshButton()
   }
 })
