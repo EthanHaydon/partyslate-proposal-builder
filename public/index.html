@@ -520,29 +520,6 @@
 
     <div class="comparison-fields" id="comparisonFields">
       <div class="field">
-        <label>Current vs Proposed XLSX</label>
-        <div class="dropzone" id="dzCompare" tabindex="0" role="button" aria-label="Drop XLSX here or click to choose">
-          <div class="dz-primary">Drop XLSX here</div>
-          <div class="dz-secondary">or click to choose · two tabs: "Current" and "Proposed"</div>
-          <div class="dz-filename" id="filenameCompare"></div>
-        </div>
-        <input type="file" id="fileCompare" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet">
-        <details class="help">
-          <summary>How to build the XLSX</summary>
-          <ol>
-            <li>Go to the HubSpot report</li>
-            <li>Filter by parent company</li>
-            <li>Export from HubSpot</li>
-            <li>Add a tab: <b>Current</b></li>
-            <li>Add a tab: <b>Proposed</b></li>
-            <li>Export as XLSX from Google Sheets</li>
-            <li>Upload to the app above</li>
-            <li>Fill in the slide copy below</li>
-          </ol>
-        </details>
-      </div>
-
-      <div class="field">
         <label for="compareTitle">Slide title</label>
         <input type="text" id="compareTitle" value="[Company] partnership — today vs. proposed">
       </div>
@@ -561,6 +538,23 @@
           <label for="compareProposedSubtitle">Proposed subtitle</label>
           <input type="text" id="compareProposedSubtitle" value="Single enterprise contract, full portfolio activated">
         </div>
+      </div>
+
+      <div class="prices" style="grid-template-columns: 1fr 1fr;">
+        <div class="field price-field">
+          <label for="compareCurrentPricing">Current Pricing</label>
+          <input type="number" id="compareCurrentPricing" min="0" step="1" placeholder="0">
+        </div>
+        <div class="field">
+          <label for="compareTodayCaption">Today caption (optional)</label>
+          <input type="text" id="compareTodayCaption" placeholder="e.g. 13 paying accounts · 11 WPC-paid + 2 client-paid">
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="compareProposedPropertiesAdded">Properties added to scope (optional)</label>
+        <input type="number" id="compareProposedPropertiesAdded" min="0" step="1" placeholder="0">
+        <div class="hint">Renders "adds N properties to scope" after the dollar delta. Proposed annual spend auto-fills from Investment Summary's discounted price.</div>
       </div>
 
       <div class="prices" style="grid-template-columns: 1fr 1fr;">
@@ -867,50 +861,10 @@ async function loadFile(file) {
 // ----- Current vs Proposed: toggle + xlsx upload -----
 const compareToggle = $('compareInclude')
 const compareFields = $('comparisonFields')
-const dzCompare = $('dzCompare')
-const fileCompareInput = $('fileCompare')
-const filenameCompareEl = $('filenameCompare')
-let xlsxBase64 = null
 
 compareToggle.addEventListener('change', () => {
   compareFields.classList.toggle('active', compareToggle.checked)
 })
-
-dzCompare.addEventListener('click', () => fileCompareInput.click())
-dzCompare.addEventListener('keydown', e => {
-  if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fileCompareInput.click() }
-})
-;['dragenter', 'dragover'].forEach(ev =>
-  dzCompare.addEventListener(ev, e => { e.preventDefault(); dzCompare.classList.add('drag') }))
-;['dragleave', 'drop'].forEach(ev =>
-  dzCompare.addEventListener(ev, e => { e.preventDefault(); dzCompare.classList.remove('drag') }))
-dzCompare.addEventListener('drop', e => {
-  const f = e.dataTransfer.files[0]
-  if (f) loadXlsx(f)
-})
-fileCompareInput.addEventListener('change', e => {
-  const f = e.target.files[0]
-  if (f) loadXlsx(f)
-})
-
-async function loadXlsx(file) {
-  filenameCompareEl.textContent = '› ' + file.name
-  setStatus('Reading XLSX…')
-  try {
-    const dataUrl = await new Promise((resolve, reject) => {
-      const reader = new FileReader()
-      reader.onload = () => resolve(reader.result)
-      reader.onerror = () => reject(new Error('cannot read file'))
-      reader.readAsDataURL(file)
-    })
-    const comma = dataUrl.indexOf(',')
-    xlsxBase64 = comma >= 0 ? dataUrl.slice(comma + 1) : null
-    setStatus(`XLSX loaded · ${file.name}`, 'ok')
-  } catch (e) {
-    xlsxBase64 = null
-    setStatus('Failed to read XLSX: ' + e.message, 'err')
-  }
-}
 
 function buildRequestBody() {
   const t = currentTemplate()
@@ -937,7 +891,9 @@ function buildRequestBody() {
     const sub = (s) => s.replace(/\[Company\]/gi, company)
     body.comparison = {
       include: compareToggle.checked,
-      xlsxBase64,
+      currentPricing: Number($('compareCurrentPricing').value) || 0,
+      todayCaption: $('compareTodayCaption').value.trim(),
+      propertiesAdded: Number($('compareProposedPropertiesAdded').value) || 0,
       title: sub($('compareTitle').value.trim()),
       subtitle: sub($('compareSubtitle').value.trim()),
       todaySubtitle: sub($('compareTodaySubtitle').value.trim()),
