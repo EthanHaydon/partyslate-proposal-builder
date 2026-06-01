@@ -583,20 +583,27 @@
     <h2 class="section-heading">Investment Summary</h2>
     <div class="hint" style="margin-bottom: 14px;">Populates slide 10. Pricing fields drive the graphic on the right; the rest fills the left column.</div>
 
-    <div class="prices">
+    <div class="prices" style="grid-template-columns: 1fr 1fr;">
       <div class="field price-field">
         <label for="listPrice">List Price</label>
         <input type="number" id="listPrice" name="listPrice" min="0" step="1" placeholder="0">
       </div>
-      <div class="field price-field">
-        <label for="discountedPrice">Discounted</label>
-        <input type="number" id="discountedPrice" name="discountedPrice" min="0" step="1" placeholder="0">
-      </div>
-      <div class="field price-field">
-        <label for="finalPrice">Final (Upfront)</label>
-        <input type="number" id="finalPrice" name="finalPrice" min="0" step="1" placeholder="0">
+      <div class="field">
+        <label for="execGroupDiscount">Group Discount</label>
+        <div style="display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: stretch;">
+          <input type="number" id="execGroupDiscount" name="execGroupDiscount" min="0" step="1" placeholder="0">
+          <div class="radio-row" style="gap: 14px; align-items: center; padding: 0 4px;">
+            <label><input type="radio" name="execDiscountUnit" value="percent" checked> %</label>
+            <label><input type="radio" name="execDiscountUnit" value="dollar"> $</label>
+          </div>
+        </div>
       </div>
     </div>
+
+    <label class="toggle-row">
+      <input type="checkbox" id="execUpfront10">
+      <span>Apply 10% annual upfront payment discount</span>
+    </label>
 
     <div class="field">
       <label for="profilesText">Profiles</label>
@@ -682,8 +689,7 @@ const fileInput = $('file')
 const filenameEl = $('filename')
 const companyInput = $('companyName')
 const listInput = $('listPrice')
-const discInput = $('discountedPrice')
-const finalInput = $('finalPrice')
+const execGroupDiscountInput = $('execGroupDiscount')
 const buildBtn = $('buildBtn')
 const statusEl = $('status')
 
@@ -818,8 +824,6 @@ function refreshButton() {
   if (t === 'executive-group-deal') {
     ok = ok && !!csvText
       && listInput.value !== ''
-      && discInput.value !== ''
-      && finalInput.value !== ''
   } else if (t === 'partyslate-proposal-sales') {
     ok = ok && !!$('standardMetro').value
   }
@@ -827,7 +831,7 @@ function refreshButton() {
   $('buildPptxBtn').disabled = !ok
 }
 
-;[companyInput, listInput, discInput, finalInput].forEach(el =>
+;[companyInput, listInput, execGroupDiscountInput].forEach(el =>
   el.addEventListener('input', refreshButton))
 
 dz.addEventListener('click', () => fileInput.click())
@@ -918,8 +922,9 @@ function buildRequestBody() {
   if (t === 'executive-group-deal') {
     body.csv = csvText
     body.listPrice = Number(listInput.value)
-    body.discountedPrice = Number(discInput.value)
-    body.finalPrice = Number(finalInput.value)
+    body.groupDiscount = Number(execGroupDiscountInput.value) || 0
+    body.groupDiscountUnit = (document.querySelector('input[name="execDiscountUnit"]:checked') || {}).value || 'percent'
+    body.execUpfront10 = $('execUpfront10').checked
     body.investmentSummary = {
       profiles: $('profilesText').value.trim(),
       includes: [...document.querySelectorAll('#includesGroup input:checked')].map(el => el.value),
