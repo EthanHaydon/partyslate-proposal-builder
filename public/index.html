@@ -530,40 +530,44 @@
       </div>
 
       <div class="prices" style="grid-template-columns: 1fr 1fr; align-items: start;">
-        <div>
-          <div class="field">
-            <label for="compareTodaySubtitle">Today subtitle</label>
-            <input type="text" id="compareTodaySubtitle" value="Multiple contracts and renewal dates">
-          </div>
-          <div class="field price-field">
-            <label for="compareCurrentPricing">Current Pricing</label>
-            <input type="number" id="compareCurrentPricing" min="0" step="1" placeholder="0">
-          </div>
-          <div class="field">
-            <label for="compareTodayCaption">Today caption (optional)</label>
-            <input type="text" id="compareTodayCaption" placeholder="e.g. 13 paying accounts · 11 WPC-paid + 2 client-paid">
-          </div>
-          <div class="field">
-            <label for="compareTodayBullets">Today bullets</label>
-            <div class="hint">One per line</div>
-            <textarea id="compareTodayBullets" rows="5" placeholder="Mixed tiers — 9 Premier, 2 Platinum, 2 Portfolio&#10;Multiple renewal dates spread across Mar 2026 – Apr 2027&#10;Inquiries delivered via form email — no HubSpot link"></textarea>
-          </div>
+        <!-- Row 1: subtitles -->
+        <div class="field">
+          <label for="compareTodaySubtitle">Today subtitle</label>
+          <input type="text" id="compareTodaySubtitle" value="Multiple contracts and renewal dates">
         </div>
-        <div>
-          <div class="field">
-            <label for="compareProposedSubtitle">Proposed subtitle</label>
-            <input type="text" id="compareProposedSubtitle" value="Single enterprise contract, full portfolio activated">
-          </div>
-          <div class="field">
-            <label for="compareProposedPropertiesAdded">Properties added to scope (optional)</label>
-            <input type="number" id="compareProposedPropertiesAdded" min="0" step="1" placeholder="0">
-            <div class="hint">Proposed annual spend auto-fills from Investment Summary's discounted price.</div>
-          </div>
-          <div class="field">
-            <label for="compareProposedBullets">Proposed bullets</label>
-            <div class="hint">One per line</div>
-            <textarea id="compareProposedBullets" rows="5" placeholder="All 25 properties on Platinum — highest exposure tier&#10;20 exclusive venues + 5 catering brands under one agreement&#10;One renewal date of WPC's choosing, aligned to budget season&#10;HubSpot integration delivers inquiries direct to your CRM"></textarea>
-          </div>
+        <div class="field">
+          <label for="compareProposedSubtitle">Proposed subtitle</label>
+          <input type="text" id="compareProposedSubtitle" value="Single enterprise contract, full portfolio activated">
+        </div>
+
+        <!-- Row 2: numeric inputs -->
+        <div class="field price-field">
+          <label for="compareCurrentPricing">Current Pricing</label>
+          <input type="number" id="compareCurrentPricing" min="0" step="1" placeholder="0">
+        </div>
+        <div class="field">
+          <label for="compareProposedPropertiesAdded">Properties added to scope (optional)</label>
+          <input type="number" id="compareProposedPropertiesAdded" min="0" step="1" placeholder="0">
+          <div class="hint">Proposed annual spend auto-fills from Investment Summary's discounted price.</div>
+        </div>
+
+        <!-- Row 3: today caption + empty (so today bullets and proposed bullets land on the same row) -->
+        <div class="field">
+          <label for="compareTodayCaption">Today caption (optional)</label>
+          <input type="text" id="compareTodayCaption" placeholder="e.g. 13 paying accounts · 11 WPC-paid + 2 client-paid">
+        </div>
+        <div></div>
+
+        <!-- Row 4: bullets -->
+        <div class="field">
+          <label for="compareTodayBullets">Today bullets</label>
+          <div class="hint">One per line</div>
+          <textarea id="compareTodayBullets" rows="5" placeholder="Mixed tiers — 9 Premier, 2 Platinum, 2 Portfolio&#10;Multiple renewal dates spread across Mar 2026 – Apr 2027&#10;Inquiries delivered via form email — no HubSpot link"></textarea>
+        </div>
+        <div class="field">
+          <label for="compareProposedBullets">Proposed bullets</label>
+          <div class="hint">One per line</div>
+          <textarea id="compareProposedBullets" rows="5" placeholder="All 25 properties on Platinum — highest exposure tier&#10;20 exclusive venues + 5 catering brands under one agreement&#10;One renewal date of WPC's choosing, aligned to budget season&#10;HubSpot integration delivers inquiries direct to your CRM"></textarea>
         </div>
       </div>
     </div>
