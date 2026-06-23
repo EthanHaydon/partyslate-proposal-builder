@@ -655,8 +655,14 @@
         </select>
       </div>
       <div class="field">
-        <label for="discountTier">Discount %</label>
-        <input type="number" id="discountTier" name="discountTier" min="0" max="100" step="1" value="20" placeholder="0–100">
+        <label for="discountTier">Group Discount</label>
+        <div style="display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: stretch;">
+          <input type="number" id="discountTier" name="discountTier" min="0" step="1" value="20" placeholder="0">
+          <div class="radio-row" style="gap: 14px; align-items: center; padding: 0 4px;">
+            <label><input type="radio" name="discountTierUnit" value="percent" checked> %</label>
+            <label><input type="radio" name="discountTierUnit" value="dollar"> $</label>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -907,6 +913,7 @@ function buildRequestBody() {
     body.metroClass = (document.querySelector('input[name="metroClass"]:checked') || {}).value || 'standard'
     body.subscriptionTier = $('subscriptionTier').value
     body.discountTier = Number($('discountTier').value)
+    body.discountTierUnit = (document.querySelector('input[name="discountTierUnit"]:checked') || {}).value || 'percent'
     body.upfront10 = $('upfront10').checked
   }
   return body
