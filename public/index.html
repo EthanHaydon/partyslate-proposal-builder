@@ -435,6 +435,32 @@
   .status.err { color: var(--danger); }
   .status.ok { color: var(--gold); }
 
+  .draft-status {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-top: 10px;
+    font-size: 12px;
+    color: var(--fg-muted);
+  }
+  .draft-indicator {
+    opacity: 0;
+    transition: opacity 0.15s ease;
+  }
+  .draft-indicator.visible { opacity: 1; }
+  .draft-indicator.err { color: var(--danger); }
+  .draft-clear {
+    background: none;
+    border: 0;
+    color: var(--fg-muted);
+    cursor: pointer;
+    font-size: 12px;
+    text-decoration: underline;
+    padding: 0;
+    font-family: inherit;
+  }
+  .draft-clear:hover { color: var(--danger); }
+
   footer {
     text-align: center;
     color: var(--fg-muted);
@@ -725,6 +751,10 @@
       <button class="btn" id="buildPptxBtn" type="submit" disabled>Build PPTX</button>
       <span class="status" id="status"></span>
     </div>
+    <div class="draft-status">
+      <span class="draft-indicator" id="draftIndicator" aria-live="polite"></span>
+      <button type="button" class="draft-clear" id="draftClear">Clear draft</button>
+    </div>
   </form>
 </main>
 
@@ -802,6 +832,7 @@ function renderMarketChips() {
       if (i >= 0) selectedMetros.splice(i, 1)
       renderMarketChips()
       rebuildAddMarketOptions()
+      if (typeof saveDraftSoon === 'function') saveDraftSoon()
     })
     chip.appendChild(rm)
     wrap.appendChild(chip)
@@ -815,6 +846,7 @@ function addMetroByName(metro) {
   selectedMetros.push(metro)
   renderMarketChips()
   rebuildAddMarketOptions()
+  if (typeof saveDraftSoon === 'function') saveDraftSoon()
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -1118,8 +1150,135 @@ form.addEventListener('submit', async (e) => {
   }
 })
 
+// ----- Draft autosave: keep the form in localStorage so a stray refresh
+// doesn't nuke a rep's work. Photos aren't saved (blob size); everything
+// else is. -----
+const DRAFT_KEY = 'proposalBuilder:draftV1'
+const DRAFT_FIELDS = [
+  'template', 'companyName',
+  'listPrice', 'execGroupDiscount', 'execUpfront10',
+  'profilesText', 'discountingText', 'billingSelect',
+  'compareInclude', 'compareCurrentPricing', 'compareTodayCaption',
+  'compareProposedPropertiesAdded', 'compareTitle', 'compareSubtitle',
+  'compareTodaySubtitle', 'compareProposedSubtitle',
+  'compareTodayBullets', 'compareProposedBullets',
+  'standardMetro', 'subscriptionTier', 'discountTier', 'upfront10',
+]
+const DRAFT_RADIO_GROUPS = ['execDiscountUnit', 'discountTierUnit', 'metroClass']
+
+function getFormState() {
+  const state = {
+    csvText,
+    selectedMetros: Array.isArray(selectedMetros) ? [...selectedMetros] : [],
+    includes: [...document.querySelectorAll('#includesGroup input:checked')].map(el => el.value),
+  }
+  for (const id of DRAFT_FIELDS) {
+    const el = document.getElementById(id)
+    if (!el) continue
+    if (el.type === 'checkbox') state[id] = el.checked
+    else state[id] = el.value
+  }
+  for (const name of DRAFT_RADIO_GROUPS) {
+    const checked = document.querySelector(`input[name="${name}"]:checked`)
+    if (checked) state['radio:' + name] = checked.value
+  }
+  return state
+}
+
+function setFormState(state) {
+  if (!state || typeof state !== 'object') return
+  for (const id of DRAFT_FIELDS) {
+    if (!(id in state)) continue
+    const el = document.getElementById(id)
+    if (!el) continue
+    if (el.type === 'checkbox') el.checked = !!state[id]
+    else el.value = state[id]
+  }
+  for (const name of DRAFT_RADIO_GROUPS) {
+    const val = state['radio:' + name]
+    if (!val) continue
+    const r = document.querySelector(`input[name="${name}"][value="${val}"]`)
+    if (r) r.checked = true
+  }
+  if (Array.isArray(state.includes)) {
+    for (const cb of document.querySelectorAll('#includesGroup input')) {
+      cb.checked = state.includes.includes(cb.value)
+    }
+  }
+  if (typeof state.csvText === 'string' && state.csvText.length) {
+    csvText = state.csvText
+    if (filenameEl) filenameEl.textContent = '› restored from draft'
+  }
+  if (Array.isArray(state.selectedMetros)) {
+    if (Array.isArray(selectedMetros)) {
+      selectedMetros.length = 0
+      state.selectedMetros.forEach(m => selectedMetros.push(m))
+    }
+  }
+}
+
+let draftSaveTimer = null
+function saveDraftSoon() {
+  clearTimeout(draftSaveTimer)
+  draftSaveTimer = setTimeout(saveDraft, 400)
+}
+
+let draftIndicatorTimer = null
+function showDraftIndicator(text, kind) {
+  const el = $('draftIndicator')
+  if (!el) return
+  el.textContent = text
+  el.className = 'draft-indicator visible' + (kind ? ' ' + kind : '')
+  clearTimeout(draftIndicatorTimer)
+  draftIndicatorTimer = setTimeout(() => el.classList.remove('visible'), 1600)
+}
+
+function saveDraft() {
+  let state
+  try {
+    state = getFormState()
+    localStorage.setItem(DRAFT_KEY, JSON.stringify(state))
+    showDraftIndicator('Draft saved')
+  } catch (e) {
+    // Retry without the CSV text (often the largest single field).
+    try {
+      if (state) delete state.csvText
+      localStorage.setItem(DRAFT_KEY, JSON.stringify(state || {}))
+      showDraftIndicator('Draft saved (CSV re-upload needed)')
+    } catch {
+      showDraftIndicator('Draft too large — not saved', 'err')
+    }
+  }
+}
+
+$('draftClear').addEventListener('click', () => {
+  if (!confirm('Clear the form and any saved draft?')) return
+  try { localStorage.removeItem(DRAFT_KEY) } catch {}
+  location.reload()
+})
+
+// Any input/change on the form fires an autosave (debounced).
+form.addEventListener('input', saveDraftSoon)
+form.addEventListener('change', saveDraftSoon)
+// Metros chip picker mutations call saveDraftSoon() directly from their
+// add/remove handlers (see addMetroByName + chip remove listener above).
+
+// Restore any saved draft BEFORE visibility runs so the right sections show.
+try {
+  const raw = localStorage.getItem(DRAFT_KEY)
+  if (raw) {
+    setFormState(JSON.parse(raw))
+    // Re-render the chip picker + comparison collapse based on restored state.
+    if (typeof renderMarketChips === 'function') renderMarketChips()
+    if (typeof rebuildAddMarketOptions === 'function') rebuildAddMarketOptions()
+    if (compareFields) compareFields.classList.toggle('active', $('compareInclude').checked)
+    showDraftIndicator('Draft restored')
+  }
+} catch {}
+
 // Initial pass: hide sections that don't match the default template selection.
 applyTemplateVisibility()
+refreshButton()
 </script>
 </body>
 </html>
