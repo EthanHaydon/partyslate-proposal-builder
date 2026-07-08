@@ -159,6 +159,45 @@
     display: block;
   }
 
+  .market-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    min-height: 8px;
+    margin-top: 8px;
+  }
+  .market-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--bg-muted);
+    border: 1px solid var(--border);
+    padding: 4px 4px 4px 12px;
+    font-size: 13px;
+    color: var(--fg);
+  }
+  .market-chip .traffic-tag {
+    font-size: 9px;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    padding: 2px 6px;
+    color: var(--fg-muted);
+    background: var(--bg);
+    border: 1px solid var(--border);
+  }
+  .market-chip .traffic-tag.high { background: #000; color: #fff; border-color: #000; }
+  .market-chip .traffic-tag.moderate { background: var(--fg-muted); color: #fff; border-color: var(--fg-muted); }
+  .market-chip button {
+    background: transparent;
+    border: 0;
+    color: var(--fg-muted);
+    cursor: pointer;
+    font-size: 16px;
+    line-height: 1;
+    padding: 2px 6px;
+  }
+  .market-chip button:hover { color: var(--danger); }
+
   .radio-row {
     display: flex;
     gap: 24px;
@@ -495,6 +534,15 @@
       </details>
     </div>
 
+    <div class="field">
+      <label>Markets</label>
+      <div class="hint">Auto-fills from CSV. Add more with the dropdown, remove with ×. Drives the Market Trends slide.</div>
+      <div class="market-chips" id="marketChips"></div>
+      <select id="addMarket" class="input" style="margin-top: 10px;">
+        <option value="">+ Add market</option>
+      </select>
+    </div>
+
     </div>
 
     <div data-template="pre-sales-proposal">
@@ -697,6 +745,104 @@ const statusEl = $('status')
 let csvText = null
 const photos = [null, null, null, null]
 
+// ----- Market chips (Executive Expansion Proposal) -----
+let MARKETS_INDEX = null      // Map<metro, market>
+const selectedMetros = []     // ordered list of metro names
+
+;(async () => {
+  try {
+    const r = await fetch('/markets.json')
+    if (!r.ok) throw new Error('markets.json fetch failed')
+    const data = await r.json()
+    MARKETS_INDEX = new Map(data.markets.map(m => [m.metro, m]))
+    rebuildAddMarketOptions()
+  } catch (e) {
+    console.warn('markets.json load failed:', e.message)
+  }
+})()
+
+function rebuildAddMarketOptions() {
+  const sel = $('addMarket')
+  if (!sel || !MARKETS_INDEX) return
+  sel.innerHTML = '<option value="">+ Add market</option>'
+  const remaining = [...MARKETS_INDEX.values()]
+    .filter(m => !selectedMetros.includes(m.metro))
+    .sort((a, b) => a.metro.localeCompare(b.metro))
+  for (const m of remaining) {
+    const opt = document.createElement('option')
+    opt.value = m.metro
+    opt.textContent = `${m.metro} · ${m.traffic_level}`
+    sel.appendChild(opt)
+  }
+}
+
+function renderMarketChips() {
+  const wrap = $('marketChips')
+  if (!wrap) return
+  wrap.innerHTML = ''
+  for (const metro of selectedMetros) {
+    const m = MARKETS_INDEX && MARKETS_INDEX.get(metro)
+    const chip = document.createElement('div')
+    chip.className = 'market-chip'
+    const name = document.createElement('span')
+    name.textContent = metro
+    chip.appendChild(name)
+    if (m) {
+      const tag = document.createElement('span')
+      tag.className = 'traffic-tag ' + (m.traffic_level || '').toLowerCase()
+      tag.textContent = m.traffic_level
+      chip.appendChild(tag)
+    }
+    const rm = document.createElement('button')
+    rm.type = 'button'
+    rm.textContent = '×'
+    rm.title = 'Remove'
+    rm.addEventListener('click', () => {
+      const i = selectedMetros.indexOf(metro)
+      if (i >= 0) selectedMetros.splice(i, 1)
+      renderMarketChips()
+      rebuildAddMarketOptions()
+    })
+    chip.appendChild(rm)
+    wrap.appendChild(chip)
+  }
+}
+
+function addMetroByName(metro) {
+  if (!metro) return
+  if (selectedMetros.includes(metro)) return
+  if (MARKETS_INDEX && !MARKETS_INDEX.has(metro)) return
+  selectedMetros.push(metro)
+  renderMarketChips()
+  rebuildAddMarketOptions()
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  const sel = $('addMarket')
+  if (!sel) return
+  sel.addEventListener('change', e => {
+    addMetroByName(e.target.value)
+    e.target.value = ''
+  })
+})
+
+// Parse metros out of a raw CSV string using the same column the backend does.
+function extractMetrosFromCsv(text) {
+  const lines = text.split(/\r?\n/).filter(Boolean)
+  if (!lines.length) return []
+  const header = lines[0].split(',').map(s => s.trim().replace(/^"|"$/g, ''))
+  const idx = header.indexOf('company_metro_area')
+  if (idx < 0) return []
+  const found = new Set()
+  for (let i = 1; i < lines.length; i++) {
+    // simple splitter — CSVs from Preset don't quote metros
+    const cols = lines[i].split(',')
+    const v = (cols[idx] || '').trim().replace(/^"|"$/g, '')
+    if (v) found.add(v)
+  }
+  return [...found]
+}
+
 function setStatus(text, kind = '') {
   statusEl.className = 'status' + (kind ? ' ' + kind : '')
   statusEl.textContent = text
@@ -857,6 +1003,11 @@ async function loadFile(file) {
   setStatus('Reading CSV…')
   try {
     csvText = await file.text()
+    // Auto-populate market chips with metros found in the CSV that match
+    // our baseline data. Additive: keeps whatever the user had already
+    // selected manually.
+    const csvMetros = extractMetrosFromCsv(csvText)
+    for (const m of csvMetros) addMetroByName(m)
     setStatus(`CSV loaded · ${file.name}`, 'ok')
   } catch (e) {
     csvText = null
@@ -882,6 +1033,7 @@ function buildRequestBody() {
   }
   if (t === 'executive-expansion-proposal') {
     body.csv = csvText
+    body.metros = [...selectedMetros]
     body.listPrice = Number(listInput.value)
     body.groupDiscount = Number(execGroupDiscountInput.value) || 0
     body.groupDiscountUnit = (document.querySelector('input[name="execDiscountUnit"]:checked') || {}).value || 'percent'
