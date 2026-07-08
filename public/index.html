@@ -421,8 +421,8 @@
     <div class="field">
       <label for="template">Template</label>
       <select id="template" name="template" required>
-        <option value="executive-group-deal">Executive Group Deal</option>
-        <option value="partyslate-proposal-sales">PartySlate Proposal Sales</option>
+        <option value="executive-expansion-proposal">Executive Expansion Proposal</option>
+        <option value="pre-sales-proposal">Pre-Sales Proposal</option>
       </select>
     </div>
 
@@ -472,7 +472,7 @@
       </div>
     </div>
 
-    <div data-template="executive-group-deal">
+    <div data-template="executive-expansion-proposal">
     <h2 class="section-heading">Lets review Performance</h2>
 
     <div class="field">
@@ -497,7 +497,7 @@
 
     </div>
 
-    <div data-template="partyslate-proposal-sales">
+    <div data-template="pre-sales-proposal">
     <h2 class="section-heading">Lets review Performance</h2>
 
     <div class="field">
@@ -509,7 +509,7 @@
     </div>
     </div>
 
-    <div data-template="executive-group-deal">
+    <div data-template="executive-expansion-proposal">
     <h2 class="section-heading">Current vs Proposed</h2>
     <div class="hint" style="margin-bottom: 14px;">Optional. Adds a side-by-side comparison slide between Market Trends and Customer Success.</div>
 
@@ -574,7 +574,7 @@
 
     </div>
 
-    <div data-template="executive-group-deal">
+    <div data-template="executive-expansion-proposal">
     <h2 class="section-heading">Investment Summary</h2>
     <div class="hint" style="margin-bottom: 14px;">Populates slide 10. Pricing fields drive the graphic on the right; the rest fills the left column.</div>
 
@@ -633,7 +633,7 @@
 
     </div>
 
-    <div data-template="partyslate-proposal-sales">
+    <div data-template="pre-sales-proposal">
     <h2 class="section-heading">Investment Summary</h2>
     <div class="hint" style="margin-bottom: 14px;">Populates slide 9. Math: List = monthly × 12, Discounted = List × (1 − discount%), Final = Discounted − (10% upfront, if checked).</div>
 
@@ -822,10 +822,10 @@ function resizeImage(file, maxDim, quality) {
 function refreshButton() {
   const t = currentTemplate()
   let ok = !!companyInput.value.trim()
-  if (t === 'executive-group-deal') {
+  if (t === 'executive-expansion-proposal') {
     ok = ok && !!csvText
       && listInput.value !== ''
-  } else if (t === 'partyslate-proposal-sales') {
+  } else if (t === 'pre-sales-proposal') {
     ok = ok && !!$('standardMetro').value
   }
   buildBtn.disabled = !ok
@@ -880,7 +880,7 @@ function buildRequestBody() {
     companyName: companyInput.value.trim(),
     photos,
   }
-  if (t === 'executive-group-deal') {
+  if (t === 'executive-expansion-proposal') {
     body.csv = csvText
     body.listPrice = Number(listInput.value)
     body.groupDiscount = Number(execGroupDiscountInput.value) || 0
@@ -908,7 +908,7 @@ function buildRequestBody() {
       todayBullets: $('compareTodayBullets').value.split('\n').map(s => s.trim()).filter(Boolean),
       proposedBullets: $('compareProposedBullets').value.split('\n').map(s => s.trim()).filter(Boolean),
     }
-  } else if (t === 'partyslate-proposal-sales') {
+  } else if (t === 'pre-sales-proposal') {
     body.metro = $('standardMetro').value
     body.metroClass = (document.querySelector('input[name="metroClass"]:checked') || {}).value || 'standard'
     body.subscriptionTier = $('subscriptionTier').value
@@ -921,7 +921,7 @@ function buildRequestBody() {
 
 form.addEventListener('submit', async (e) => {
   e.preventDefault()
-  if (currentTemplate() === 'executive-group-deal' && !csvText) {
+  if (currentTemplate() === 'executive-expansion-proposal' && !csvText) {
     setStatus('Please add a CSV first.', 'err')
     return
   }

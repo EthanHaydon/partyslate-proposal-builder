@@ -14,7 +14,7 @@ import {
 } from '../lib/proposal-prep.js'
 import { assemblePptx } from '../lib/pptx-assemble.js'
 
-const TEMPLATE_IDS = ['executive-group-deal', 'partyslate-proposal-sales']
+const TEMPLATE_IDS = ['executive-expansion-proposal', 'pre-sales-proposal']
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -24,7 +24,7 @@ export default async function handler(req, res) {
 
   try {
     const body = req.body || {}
-    const template = body.template || 'executive-group-deal'
+    const template = body.template || 'executive-expansion-proposal'
     if (!TEMPLATE_IDS.includes(template)) {
       res.status(400).json({ error: `unknown template: ${template}` })
       return
@@ -35,7 +35,7 @@ export default async function handler(req, res) {
     }
 
     const errors = []
-    const prep = template === 'partyslate-proposal-sales'
+    const prep = template === 'pre-sales-proposal'
       ? preparePartySlateProposalSales(body, errors)
       : prepareExecutiveGroupDeal(body, errors)
     if (!prep) {
